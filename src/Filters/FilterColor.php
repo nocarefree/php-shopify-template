@@ -1,6 +1,6 @@
 <?php 
 
-namespace Liquid\ShopifyExtends\Filters;
+namespace Ncf\Liquid\Filters;
 
 
 //  https://shopify.dev/api/liquid/filters/color-filters

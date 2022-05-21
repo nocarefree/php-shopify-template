@@ -1,11 +1,11 @@
 <?php 
 
-namespace Liquid\ShopifyExtends\Filters;
+namespace Ncf\Liquid\Filters;
 
 
 //  https://shopify.dev/api/liquid/filters/array-filters
 
-class FilterArray{
+class FilterAdditional{
 
 
     public static function concat($input ,$array){

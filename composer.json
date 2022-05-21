@@ -2,7 +2,7 @@
     "name": "nocarefree/php-shopify-liquid",
     "autoload": {
         "psr-4": {
-            "Nocarefree\\PhpShopifyLiquid\\": "src/"
+            "Ncf\\ShopifyLiquid\\": "src/"
         }
     },
     "authors": [
