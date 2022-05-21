@@ -1,0 +1,18 @@
+{
+    "name": "nocarefree/php-shopify-liquid",
+    "autoload": {
+        "psr-4": {
+            "Nocarefree\\PhpShopifyLiquid\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "nocarefree",
+            "email": "170890803@qq.com"
+        }
+    ],
+    "require": {
+        "illuminate/support": "^9.13",
+        "nocarefree/php-liquid": "dev-master"
+    }
+}
