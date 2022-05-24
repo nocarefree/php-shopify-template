@@ -9,16 +9,16 @@
  * @package Liquid
  */
 
-namespace Liquid\Tag;
+namespace Ncf\ShopifyLiquid\Tags;
 
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
 use Liquid\Liquid;
 use Liquid\LiquidException;
-use Liquid\FileSystem;
 use Liquid\Regexp;
 use Liquid\Template;
+use Ncf\ShopifyLiquid\ShopifyFileSystem;
 
 /**
  * Includes another, partial, template
@@ -38,8 +38,10 @@ use Liquid\Template;
  *     Will loop over all the values of bar, including the template foo, passing a variable called foo
  *     with each value of bar
  */
-class TagInclude extends AbstractTag
+class TagRender extends AbstractTag
 {
+    protected static $dirPath = 'snippets';
+
 	/**
 	 * @var string The name of the template
 	 */
@@ -74,7 +76,7 @@ class TagInclude extends AbstractTag
 	 *
 	 * @throws \Liquid\LiquidException
 	 */
-	public function __construct($markup, array &$tokens, FileSystem $fileSystem = null) {
+	public function __construct($markup, array &$tokens, ShopifyFileSystem $fileSystem = null) {
 		$regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . Liquid::get('QUOTED_FRAGMENT') . '+))?/');
 
 		if ($regex->match($markup)) {
@@ -106,7 +108,7 @@ class TagInclude extends AbstractTag
 		}
 
 		// read the source of the template and create a new sub document
-		$source = $this->fileSystem->readTemplateFile($this->templateName);
+		$source = $this->fileSystem->readTemplateFile($this->templateName, static::$dirPath);
 
 		$this->hash = md5($source);
 
