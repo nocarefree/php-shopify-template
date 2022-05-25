@@ -35,18 +35,31 @@ class ShopifyFileSystem implements FileSystem
 	}
 
 	/**
-	 * 解析文件
+	 * 读取liquid文件
 	 *
 	 * @param string $templatePath
 	 *
 	 * @throws LiquidException
 	 * @return string template content
 	 */
-	public function readTemplateFile($path, $type = '') {
-		if (!($fullPath = $this->fullPath($path, $type))) {
-			throw new LiquidException("No such template '$type : $path'");
-		}
+	public function readTemplateFile($path) {
+		$fullPath = $this->fullPath($path).'.liquid';
+		$this->validPath($fullPath);
 		return file_get_contents($fullPath);
+	}
+
+	/**
+	 * 读取json文件
+	 *
+	 * @param string $templatePath
+	 *
+	 * @throws LiquidException
+	 * @return string template content
+	 */
+	public function readJsonFile($path) {
+		$fullPath = $this->fullPath($path).'.json';
+		$this->validPath($fullPath);
+		return @json_decode(file_get_contents($fullPath),true);
 	}
 
 	/**
@@ -72,19 +85,18 @@ class ShopifyFileSystem implements FileSystem
 	 * @throws LiquidException
 	 * @return string
 	 */
-	public function templatePath($path) {
+	public function templateType($path) {
 
         $path = ltrim($path, '/');
-        $fullPath = $this->root . '/templates/' . $path;
+        $fullPath = $this->root . "/" . ShopifyTemplate::PATH_TEMPLATE ."/" . $path;
 
         if(file_exists($fullPath . '.json')){
-            $fullPath = $fullPath .'.json';
+            return 'JSON';
         }else if(file_exists($fullPath . '.liquid')){
-            $fullPath = $fullPath .'.liquid';
+            return 'LIQUID';
         }
 
-        $this->validPath($fullPath);
-		return $fullPath;
+		return null;
 	}
 
     /**
@@ -93,11 +105,9 @@ class ShopifyFileSystem implements FileSystem
      * @param [type] $templatePath
      * @return string
      */
-    public function fullPath($path, $type) {
+    public function fullPath($path) {
         $path = ltrim($path, '/');
-        $type = trim($type, '/');
-        $fullPath = $this->root . '/'. trim($type).'/' . $path . '.liquid';
-		$this->validPath($fullPath);
+        $fullPath = $this->root . '/'. $path;
 		return $fullPath;
 	}
 
@@ -111,7 +121,7 @@ class ShopifyFileSystem implements FileSystem
 	 */
 	public function validPath($fullPath) {
 		$rootRegex = new Regexp('/' . preg_quote(realpath($this->root.'/'), '/') . '/');
-		if (!$rootRegex->match(realpath($fullPath))) {
+		if (!$rootRegex->match(realpath($fullPath)) || !file_exists($fullPath)) {
 			throw new LiquidException("Illegal template path '" .$fullPath . "'");
 		}
 	}

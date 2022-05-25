@@ -7,7 +7,10 @@ use Liquid\Template;
 use Ncf\Liquid\Filters\FilterAdditional;
 use Illuminate\Support\Str;
 
-class ShopifyTemplate extends Template{
+class ShopifyTemplate{
+
+    const PATH_TEMPLATE  = 'templates';
+    const PATH_LAYOUT = 'layout'; 
 
     private $onlineStoreEditorData;
 
@@ -67,16 +70,17 @@ class ShopifyTemplate extends Template{
     public function __construct($themePath = null, $cache = null)
     {
         $this->fileSystem = new ShopifyFileSystem($themePath);
+        $this->liquid = new \Liquid\Template();
+        $this->liquid->setFileSystem($this->fileSystem);
 
-        parent::__construct($themePath, $cache);
-        $this->setFileSystem($this->fileSystem);
+
 
         foreach($this->innerTags as $name => $tag){
-            $this->registerTag($name, $tag);
+            $this->liquid->registerTag($name, $tag);
         }
 
         foreach($this->innerFilters as $filter){
-            $this->registerFilter($filter);
+            $this->liquid->registerFilter($filter);
         }
 
         $this->layout = 'theme';
@@ -92,53 +96,39 @@ class ShopifyTemplate extends Template{
     public function parseTemplate($template){
 
         $onlineStoreEditorData = new onlineStoreEditorData();
-        $onlineStoreEditorData->set('template.type', $template);    
+        $onlineStoreEditorData->set('template.type', $template);  
+        $this->onlineStoreEditorData = $onlineStoreEditorData;  
 
-        $path = $this->fileSystem->templatePath($template);
-        $type = Str::endsWith($path,  '.json')?'JSON':'LIQUID';
+        $type = $this->fileSystem->templateType($template);
+        $this->onlineStoreEditorData->set('template.format', $type);    
 
-        $onlineStoreEditorData->set('template.format', $type);    
-
-        if($type == 'json'){
-            $setting = json_decode(file_get_contents($path), true);
-            $this->setting = $setting;
-            $this->layout = $this->setting['layout']??$this->layout;
+        if($type == 'JSON'){
+            $this->parseTemplateJson($template);
+        }else{
+            $layoutContent =  $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_TEMPLATE."/".$template));
         }
         
-        return $this->parse($this->fileSystem->readTemplateFile($this->layout, 'layout'));
+        return $this->liquid->parse($this->fileSystem->readTemplateFile($this->layout, 'layout'));
     }
 
-    public function getSectionPresets(){
+    public function parseTemplateJson($template){
+        $config =$this->fileSystem->readJson(STATIC::PATH_TEMPLATE."/".$template);
+        $this->layout = $config['layout']?:$this->layout;
+        $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_LAYOUT."/".$this->layout));
 
+
+        foreach($config['order'] as $sectionId){
+            $type = $config['sections'][$sectionId]['type'];
+
+        }
     }
 
-    /**
-     * 解析shopify模板
-     *
-     * @param [type] $page
-     * @return void
-     */
-    public function render(array $assigns = array(), $filters = null, array $registers = array()) {
 
-        // $this->renderLayout();
-        // $this->renderHeader();
+    public function render($template, $assigns) {
+        $onlineStoreEditorData = new onlineStoreEditorData();
+        
+        $this->parseTemplate;
 
-
-		// $context = new Context($assigns, $registers);
-
-		// if (!is_null($filters)) {
-		// 	if (is_array($filters)) {
-		// 		$this->filters = array_merge($this->filters, $filters);
-		// 	} else {
-		// 		$this->filters[] = $filters;
-		// 	}
-		// }
-
-		// foreach ($this->filters as $filter) {
-		// 	$context->addFilters($filter);
-		// }
-
-		// return $this->root->render($context);
     }
 
   
