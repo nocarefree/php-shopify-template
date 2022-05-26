@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "75750b95da8a46463e3b61654fa10268",
+    "content-hash": "3eb57991fb10e696602d13d801685f61",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -105,16 +105,16 @@
         },
         {
             "name": "illuminate/collections",
-            "version": "v9.13.0",
+            "version": "v9.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/collections.git",
-                "reference": "7d7617afdca6f15c881856c679da4e76820e7674"
+                "reference": "0a33aa68dfe98bcaa14b3b0b9eba355112c0a8d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/collections/zipball/7d7617afdca6f15c881856c679da4e76820e7674",
-                "reference": "7d7617afdca6f15c881856c679da4e76820e7674",
+                "url": "https://api.github.com/repos/illuminate/collections/zipball/0a33aa68dfe98bcaa14b3b0b9eba355112c0a8d6",
+                "reference": "0a33aa68dfe98bcaa14b3b0b9eba355112c0a8d6",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -162,11 +162,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2022-05-16T15:20:45+00:00"
+            "time": "2022-05-19T14:29:30+00:00"
         },
         {
             "name": "illuminate/conditionable",
-            "version": "v9.12.2",
+            "version": "v9.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/conditionable.git",
@@ -217,8 +217,62 @@
             "time": "2022-02-28T16:37:46+00:00"
         },
         {
+            "name": "illuminate/config",
+            "version": "v9.14.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/config.git",
+                "reference": "d2dc74fdcc89239e1910a8d08b2b2e5ad26a043c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/config/zipball/d2dc74fdcc89239e1910a8d08b2b2e5ad26a043c",
+                "reference": "d2dc74fdcc89239e1910a8d08b2b2e5ad26a043c",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "illuminate/collections": "^9.0",
+                "illuminate/contracts": "^9.0",
+                "php": "^8.0.2"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "9.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Config\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Config package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2022-02-01T16:16:50+00:00"
+        },
+        {
             "name": "illuminate/contracts",
-            "version": "v9.13.0",
+            "version": "v9.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
@@ -272,7 +326,7 @@
         },
         {
             "name": "illuminate/macroable",
-            "version": "v9.12.2",
+            "version": "v9.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/macroable.git",
@@ -324,16 +378,16 @@
         },
         {
             "name": "illuminate/support",
-            "version": "v9.13.0",
+            "version": "v9.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/support.git",
-                "reference": "70c24266d84fb3bb4ec58cf5229323afd2e3374e"
+                "reference": "d031324a8209335d10af8c90e5a467e503d417f1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/support/zipball/70c24266d84fb3bb4ec58cf5229323afd2e3374e",
-                "reference": "70c24266d84fb3bb4ec58cf5229323afd2e3374e",
+                "url": "https://api.github.com/repos/illuminate/support/zipball/d031324a8209335d10af8c90e5a467e503d417f1",
+                "reference": "d031324a8209335d10af8c90e5a467e503d417f1",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -395,7 +449,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2022-05-12T15:23:12+00:00"
+            "time": "2022-05-24T13:49:53+00:00"
         },
         {
             "name": "nesbot/carbon",
@@ -506,12 +560,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/nocarefree/php-liquid.git",
-                "reference": "0dff78b6f2583782c768be190984a5742721c168"
+                "reference": "1e4910e0a61c261035a119ef38abb7cb25ca0d2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nocarefree/php-liquid/zipball/0dff78b6f2583782c768be190984a5742721c168",
-                "reference": "0dff78b6f2583782c768be190984a5742721c168",
+                "url": "https://api.github.com/repos/nocarefree/php-liquid/zipball/1e4910e0a61c261035a119ef38abb7cb25ca0d2a",
+                "reference": "1e4910e0a61c261035a119ef38abb7cb25ca0d2a",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -564,7 +618,7 @@
             "support": {
                 "source": "https://github.com/nocarefree/php-liquid/tree/master"
             },
-            "time": "2022-05-21T03:22:23+00:00"
+            "time": "2022-05-26T03:04:32+00:00"
         },
         {
             "name": "psr/container",

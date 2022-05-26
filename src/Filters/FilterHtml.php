@@ -1,6 +1,6 @@
 <?php 
 
-namespace Ncf\Liquid\Filters;
+namespace Ncf\ShopifyLiquid\Filters;
 
 
 // https://shopify.dev/api/liquid/filters/html-filters
@@ -33,7 +33,7 @@ class FilterHtml{
     }
 
     public static function stylesheet_tag($input){
-        return null;
+        return '<link href="'.$input.'" rel="stylesheet" type="text/css" media="all" />';
     }
     
     public static function time_tag($input){

@@ -6,11 +6,13 @@ use Liquid\Tag\TagDecrement;
 use Liquid\Template;
 use Ncf\Liquid\Filters\FilterAdditional;
 use Illuminate\Support\Str;
+use Liquid\LiquidException;
 
 class ShopifyTemplate{
 
     const PATH_TEMPLATE  = 'templates';
     const PATH_LAYOUT = 'layout'; 
+    const PATH_SECTION = 'sections'; 
 
     private $onlineStoreEditorData;
 
@@ -74,7 +76,6 @@ class ShopifyTemplate{
         $this->liquid->setFileSystem($this->fileSystem);
 
 
-
         foreach($this->innerTags as $name => $tag){
             $this->liquid->registerTag($name, $tag);
         }
@@ -93,41 +94,59 @@ class ShopifyTemplate{
      * @param [type] $page
      * @return void
      */
-    public function parseTemplate($template){
-
-        $onlineStoreEditorData = new onlineStoreEditorData();
-        $onlineStoreEditorData->set('template.type', $template);  
-        $this->onlineStoreEditorData = $onlineStoreEditorData;  
+    public function renderTemplate($template){    
 
         $type = $this->fileSystem->templateType($template);
+        $this->onlineStoreEditorData->set('template.type', $template);  
         $this->onlineStoreEditorData->set('template.format', $type);    
 
         if($type == 'JSON'){
-            $this->parseTemplateJson($template);
+            $contentForLayout = $this->renderContentJson($template);
         }else{
-            $layoutContent =  $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_TEMPLATE."/".$template));
+            $contentForLayout = $this->renderContentLiquid($template);
         }
-        
-        return $this->liquid->parse($this->fileSystem->readTemplateFile($this->layout, 'layout'));
+        return $contentForLayout;
     }
 
-    public function parseTemplateJson($template){
-        $config =$this->fileSystem->readJson(STATIC::PATH_TEMPLATE."/".$template);
-        $this->layout = $config['layout']?:$this->layout;
-        $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_LAYOUT."/".$this->layout));
 
+    public function renderContentLiquid($template){
+        $context = new Context($this, $this->assigns);
+        $this->assigns['content_for_layout'] .= $this->liquid
+            ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_TEMPLATE."/". $template))
+            ->render($context);    
+    }
 
+    public function renderContentJson($template){
+        $config = $this->fileSystem->readJsonFile(STATIC::PATH_TEMPLATE."/".$template);
+        $this->onlineStoreEditorData->set('layout', $config['layout']??'');
+
+        //独立分析section
+        $contentForLayout = '';
         foreach($config['order'] as $sectionId){
-            $type = $config['sections'][$sectionId]['type'];
-
+            $section = $config['sections'][$sectionId];
+            $assigns = $this->assigns;
+            $section['id'] = $sectionId;
+            $assigns['section'] = $section;
+            $context = new Context($this, $assigns);
+            try{
+                $this->onlineStoreEditorData->set('in_section', $section['type']);
+                $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SECTION."/". $section['type']));
+                $html = $this->liquid->render($context);
+                var_dump($html);exit;
+                $contentForLayout .= $html;
+            }catch(LiquidException $e){
+                $contentForLayout .= '';
+            }
         }
+        $this->onlineStoreEditorData->set('in_section', false);
+        return $contentForLayout;
     }
 
 
-    public function render($template, $assigns) {
-        $onlineStoreEditorData = new onlineStoreEditorData();
-        
-        $this->parseTemplate;
+    public function render($template, $assigns = []) {
+        $this->assigns = $assigns;
+        $this->onlineStoreEditorData = new \Illuminate\Config\Repository();
+        return $this->renderTemplate($template);
 
     }
 

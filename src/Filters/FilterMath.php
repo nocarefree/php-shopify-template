@@ -1,6 +1,6 @@
 <?php 
 
-namespace Ncf\Liquid\Filters;
+namespace Ncf\ShopifyLiquid\Filters;
 
 
 // https://shopify.dev/api/liquid/filters/math-filters
