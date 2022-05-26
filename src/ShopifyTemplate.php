@@ -131,7 +131,10 @@ class ShopifyTemplate{
             try{
                 $this->onlineStoreEditorData->set('in_section', $section['type']);
                 $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SECTION."/". $section['type']));
+                file_put_contents('1.txt', var_export($this->liquid->getRoot()->getNodelist(), true));
+
                 $html = $this->liquid->render($context);
+                
                 var_dump($html);exit;
                 $contentForLayout .= $html;
             }catch(LiquidException $e){

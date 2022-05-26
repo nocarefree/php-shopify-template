@@ -16,6 +16,7 @@ use Liquid\AbstractBlock;
 use Liquid\Regexp;
 use Liquid\FileSystem;
 use Liquid\LiquidException;
+use Liquid\Context;
 
 
 /**
@@ -79,5 +80,8 @@ class TagStyle extends AbstractBlock
 		parent::__construct($markup, $tokens, $fileSystem);
 	}
 
+	public function render(Context $context){
+		return "<style>" . parent::render($context) . "<style>";
+	}
 
 }
