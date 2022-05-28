@@ -23,8 +23,7 @@ use Ncf\ShopifyLiquid\ShopifyFileSystem;
 
 class TagSchema extends AbstractBlock
 {
-
-
-
-
+    public function render(Context $context){
+        return '';
+    }
 }

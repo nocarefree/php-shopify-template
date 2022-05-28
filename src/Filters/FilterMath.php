@@ -21,7 +21,7 @@ class FilterMath{
     }
 
     public static function divided_by($input, $value){
-        return ceil($input / $value);
+        return is_numeric($value) && $value !=0 ? ceil($input / $value) : '';
     }
 
     public static function minus($input, $value){

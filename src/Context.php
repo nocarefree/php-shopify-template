@@ -8,13 +8,8 @@ use Illuminate\Support\Arr;
 class Context extends \Liquid\Context{
 
 
-    public function __construct(ShopifyTemplate $template, array $assigns = array(), array $registers = array()){
+    public function __construct(array $assigns = array(), array $registers = array()){
         parent::__construct($assigns, $registers);
-        $this->template = $template;
-    }
-
-    public function template(){
-        return $this->template;
     }
 
 	/**
@@ -74,7 +69,7 @@ class Context extends \Liquid\Context{
 			}
 		}
 
-		return Arr::get($this->assigns, $key, null);
+		return Arr::get($this->assigns[0], $key, null);
 	}
     
 }

@@ -25,4 +25,8 @@ class TagSection extends TagRender
 {
     protected static $dirPath = 'sections';
 
+    // public function render(Context $context){
+    //     return '';
+    // }
+
 }

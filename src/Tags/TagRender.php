@@ -58,6 +58,11 @@ class TagRender extends AbstractTag
 	private $variable;
 
 	/**
+	 * @var mixed The value to pass to the child template as the template name
+	 */
+	private $args;
+
+	/**
 	 * @var Document The Document that represents the included template
 	 */
 	private $document;
@@ -77,7 +82,8 @@ class TagRender extends AbstractTag
 	 * @throws \Liquid\LiquidException
 	 */
 	public function __construct($markup, array &$tokens, ShopifyFileSystem $fileSystem = null) {
-		$regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . Liquid::get('QUOTED_FRAGMENT') . '+))?/');
+		$regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . Liquid::get('VARIABLE_NAME') . '+) as (' . Liquid::get('VARIABLE_NAME') . '+))?/s');
+		$argumentRegexp = new Regexp('/("[^"]+"|\'[^\']+\')\s+' . Liquid::get('ARGUMENT_SEPARATOR') . '\s*(.*)$/s');
 
 		if ($regex->match($markup)) {
 			$this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
@@ -85,11 +91,15 @@ class TagRender extends AbstractTag
 			if (isset($regex->matches[1])) {
 				$this->collection = (isset($regex->matches[3])) ? ($regex->matches[3] == "for") : null;
 				$this->variable = (isset($regex->matches[4])) ? $regex->matches[4] : null;
+				$this->variableName = (isset($regex->matches[5])) ? $regex->matches[5] : $this->templateName;
 			}
 
 			$this->extractAttributes($markup);
+		} else if($argumentRegexp->match($markup)){
+			$this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
+			$this->args = new \Liquid\Arguments($argumentRegexp->matches[2]);
 		} else {
-			throw new LiquidException("Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]");
+			throw new LiquidException("Error in tag 'rander' - Valid syntax: rander '[template]' (with|for) [object|collection]");
 		}
 
 		parent::__construct($markup, $tokens, $fileSystem);
@@ -103,28 +113,7 @@ class TagRender extends AbstractTag
 	 * @throws \Liquid\LiquidException
 	 */
 	public function parse(array &$tokens) {
-		if ($this->fileSystem === null) {
-			throw new LiquidException("No file system");
-		}
 
-		// read the source of the template and create a new sub document
-		$source = $this->fileSystem->readTemplateFile($this->templateName, static::$dirPath);
-
-		$this->hash = md5($source);
-
-		$cache = Template::getCache();
-
-		if (isset($cache)) {
-			if (($this->document = $cache->read($this->hash)) != false && $this->document->checkIncludes() != true) {
-			} else {
-				$templateTokens = Template::tokenize($source);
-				$this->document = new Document($templateTokens, $this->fileSystem);
-				$cache->write($this->hash, $this->document);
-			}
-		} else {
-			$templateTokens = Template::tokenize($source);
-			$this->document = new Document($templateTokens, $this->fileSystem);
-		}
 	}
 
 	/**
@@ -159,26 +148,35 @@ class TagRender extends AbstractTag
 		$result = '';
 		$variable = $context->get($this->variable);
 
-		$context->push();
-
-		foreach ($this->attributes as $key => $value) {
-			$context->set($key, $context->get($value));
+		if(!$context->registers['_app'] instanceof \Ncf\ShopifyLiquid\ShopifyTemplate){
+			return null;
 		}
 
 		if ($this->collection) {
-			foreach ($variable as $item) {
-				$context->set($this->templateName, $item);
-				$result .= $this->document->render($context);
+			$count = count($variable);
+			foreach ($variable as $key=>$item) {
+				$data = [];
+				$data['forloop'] = [
+					'first'=> $key==0,
+					'index'=> $key+1,
+					'index0'=> $key,
+					'last'=> $key==($count-1),
+					'length' => $count,
+					'rindex' => $count-$key,
+					'rindex0' => $count-1-$key,
+				];
+				$data[$this->variableName] = $item;
+				$result .= $context->registers['_app']->renderSnippetLiquid($this->templateName, $data);
 			}
+		} else if($this->args){
+			$result .= $context->registers['_app']->renderSnippetLiquid($this->templateName, $this->args->render($context));
 		} else {
+			$data = [];
 			if (!is_null($this->variable)) {
-				$context->set($this->templateName, $variable);
+				$data[$this->variableName] = $variable;
 			}
-
-			$result .= $this->document->render($context);
+			$result .= $context->registers['_app']->renderSnippetLiquid($this->templateName, $data);
 		}
-
-		$context->pop();
 
 		return $result;
 	}

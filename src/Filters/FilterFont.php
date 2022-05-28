@@ -8,7 +8,7 @@ namespace Ncf\ShopifyLiquid\Filters;
 class FilterFont{
 
 
-    public static function font_modify($input ,$key, $value){
+    public static function font_modify($input , $key, $value){
         if($key == 'style'){
             if(in_array($value, ['normal', 'italic', 'oblique'])){
                 $input['style'] = $value;
@@ -23,12 +23,12 @@ class FilterFont{
         return $input;
     }
 
-    public static function font_face($input , $key){
+    public static function font_face($input , $key = null){
         return null;
     }
 
-    public static function font_url($input, $key){
-        return null;
+    public static function font_url($input, $key = null){
+        return $input;
     }
 
 

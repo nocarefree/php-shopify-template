@@ -13,6 +13,7 @@ class ShopifyTemplate{
     const PATH_TEMPLATE  = 'templates';
     const PATH_LAYOUT = 'layout'; 
     const PATH_SECTION = 'sections'; 
+    const PATH_SNIPPET = 'snippets'; 
 
     private $onlineStoreEditorData;
 
@@ -96,23 +97,37 @@ class ShopifyTemplate{
      */
     public function renderTemplate($template){    
 
-        $type = $this->fileSystem->templateType($template);
-        $this->onlineStoreEditorData->set('template.type', $template);  
-        $this->onlineStoreEditorData->set('template.format', $type);    
+        // $type = $this->fileSystem->templateType($template);
+        // $this->onlineStoreEditorData->set('template.type', $template);  
+        // $this->onlineStoreEditorData->set('template.format', $type);    
 
-        if($type == 'JSON'){
-            $contentForLayout = $this->renderContentJson($template);
-        }else{
-            $contentForLayout = $this->renderContentLiquid($template);
-        }
-        return $contentForLayout;
+        // if($type == 'JSON'){
+        //     $contentForLayout = $this->renderContentJson($template);
+        // }else{
+        //     $contentForLayout = $this->renderContentLiquid($template);
+        // }
+
+        $context = new Context($this->assigns, ['_app'=>$this]);
+        $layout = $this->liquid
+            ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_LAYOUT."/". $this->layout))
+            ->render($context);  
+        
+        file_put_contents('2.txt',$layout);
+
+        return $layout;
     }
 
-
     public function renderContentLiquid($template){
-        $context = new Context($this, $this->assigns);
+        $context = new Context($this->assigns, ['_app'=>$this]);
         $this->assigns['content_for_layout'] .= $this->liquid
             ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_TEMPLATE."/". $template))
+            ->render($context);    
+    }
+
+    public function renderSnippetLiquid($template, $assigns){
+        $context = new Context($assigns, ['_app'=>$this]);
+        return $this->liquid
+            ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SNIPPET."/". $template))
             ->render($context);    
     }
 
@@ -127,18 +142,17 @@ class ShopifyTemplate{
             $assigns = $this->assigns;
             $section['id'] = $sectionId;
             $assigns['section'] = $section;
-            $context = new Context($this, $assigns);
+            $context = new Context($assigns, ['_app'=>$this]);
             try{
                 $this->onlineStoreEditorData->set('in_section', $section['type']);
                 $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SECTION."/". $section['type']));
-                file_put_contents('1.txt', var_export($this->liquid->getRoot()->getNodelist(), true));
+                // file_put_contents('1.txt', var_export($this->liquid->getRoot()->getNodelist(), true));
 
                 $html = $this->liquid->render($context);
                 
-                var_dump($html);exit;
                 $contentForLayout .= $html;
             }catch(LiquidException $e){
-                $contentForLayout .= '';
+                $contentForLayout .= 'Liquid error (sections/'.$section['type'].'.liquid line 40):'. $e->getMessage();
             }
         }
         $this->onlineStoreEditorData->set('in_section', false);
@@ -152,6 +166,10 @@ class ShopifyTemplate{
         return $this->renderTemplate($template);
 
     }
+
+    public function getAssigns(){
+		return [];
+	}
 
   
 

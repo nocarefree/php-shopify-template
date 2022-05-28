@@ -2,6 +2,7 @@
 
 namespace Ncf\ShopifyLiquid\Filters;
 
+use Liquid\LiquidException;
 
 //  https://shopify.dev/api/liquid/filters/array-filters
 
@@ -25,6 +26,36 @@ class FilterAdditional{
             return (isset($item->$key) && $item->$key == $value) 
                 || (isset($item[$key]) && $item[$key] == $value);
         });
+    }
+
+    public static function placeholder_svg_tag($input, $class){
+        $allowSvgs = [
+            'collection-1',
+            'collection-2',
+            'collection-3',
+            'collection-4',
+            'collection-5',
+            'collection-6',
+            'lifestyle-1',
+            'lifestyle-2',
+            'image',
+            'product-1',
+            'product-2',
+            'product-3',
+            'product-4',
+            'product-5',
+            'product-6',
+        ];
+
+        if(!in_array($input,$allowSvgs)){
+            throw new LiquidException("Unknown SVG placeholder 'collection-7'");
+        }
+
+        $content = file_get_contents(dirname(dirname(__DIR__)).'/icons/'.$input.'.svg');
+        if(is_string($class)){
+            $content = str_replace('<svg','<svg class="'.$class.'"', $content);
+        }
+        return $content;
     }
 
 
