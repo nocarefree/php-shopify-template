@@ -32,5 +32,8 @@ class FilterMath{
         return $input + $value;
     }
 
+    public static function times($input, $operand) {
+		return (float)$input * (float)$operand;
+	}
 
 }

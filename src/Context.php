@@ -26,14 +26,19 @@ class Context extends \Liquid\Context{
 		return $this->resolve($key);
 	}
 
+
+	public function hasKey($key) {
+		return (!is_null($this->resolve($key)));
+	}
+
 	public function set($key, $value, $global = false) {
 		if($global){
 			foreach($this->assigns as &$assigns){
 				Arr::set($assigns, $key, $value);
 			}
 		}else{
-			$assigns = &end($this->assigns);
-			Arr::set($assigns, $key, $value);
+			$assigns = $this->lastAssigns();
+			$this->assigns[count($this->assigns)-1] = Arr::set($assigns, $key, $value);
 		}
 		
 		return $this;

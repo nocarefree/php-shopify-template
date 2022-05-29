@@ -17,7 +17,7 @@
 <meta property="og:url" content="">
 <meta property="og:title" content="">
 <meta property="og:type" content="">
-<meta property="og:description" content=""><meta name="twitter:card" content="summary_large_image">
+<meta property="og:description" content=""><meta name="twitter:site" content=""><meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="">
 <meta name="twitter:description" content="">
 
@@ -43,7 +43,7 @@
         --font-heading-weight: ;
 
         --font-body-scale: ;
-        --font-heading-scale: ;
+        --font-heading-scale: 2.0;
 
         --color-base-text: , , ;
         --color-shadow: , , ;
@@ -53,7 +53,7 @@
         --color-base-outline-button-labels: , , ;
         --color-base-accent-1: , , ;
         --color-base-accent-2: , , ;
-        --payment-terms-background-color: ;
+        --payment-terms-background-color: #f2efdd;
 
         --gradient-base-background-1: ;
         --gradient-base-background-2: ;
@@ -62,19 +62,19 @@
 
         --media-padding: px;
         --media-border-opacity: ;
-        --media-border-width: px;
-        --media-radius: px;
+        --media-border-width: 2px;
+        --media-radius: 12px;
         --media-shadow-opacity: ;
-        --media-shadow-horizontal-offset: px;
-        --media-shadow-vertical-offset: px;
-        --media-shadow-blur-radius: px;
+        --media-shadow-horizontal-offset: 0px;
+        --media-shadow-vertical-offset: 6px;
+        --media-shadow-blur-radius: 0px;
 
-        --page-width: 0.0rem;
+        --page-width: 120.0rem;
         --page-width-margin: 0rem;
 
         --card-image-padding: rem;
         --card-corner-radius: rem;
-        --card-text-alignment: ;
+        --card-text-alignment: left;
         --card-border-width: rem;
         --card-border-opacity: ;
         --card-shadow-opacity: ;
@@ -84,64 +84,64 @@
 
         --badge-corner-radius: rem;
 
-        --popup-border-width: px;
+        --popup-border-width: 2px;
         --popup-border-opacity: ;
-        --popup-corner-radius: px;
+        --popup-corner-radius: 12px;
         --popup-shadow-opacity: ;
-        --popup-shadow-horizontal-offset: px;
-        --popup-shadow-vertical-offset: px;
-        --popup-shadow-blur-radius: px;
+        --popup-shadow-horizontal-offset: 0px;
+        --popup-shadow-vertical-offset: 2px;
+        --popup-shadow-blur-radius: 0px;
 
-        --drawer-border-width: px;
+        --drawer-border-width: 3px;
         --drawer-border-opacity: ;
         --drawer-shadow-opacity: ;
-        --drawer-shadow-horizontal-offset: px;
-        --drawer-shadow-vertical-offset: px;
-        --drawer-shadow-blur-radius: px;
+        --drawer-shadow-horizontal-offset: 6px;
+        --drawer-shadow-vertical-offset: 6px;
+        --drawer-shadow-blur-radius: 0px;
 
-        --spacing-sections-desktop: px;
-        --spacing-sections-mobile: 0.0px;
+        --spacing-sections-desktop: 64px;
+        --spacing-sections-mobile: 20px;
 
-        --grid-desktop-vertical-spacing: px;
-        --grid-desktop-horizontal-spacing: px;
-        --grid-mobile-vertical-spacing: 0.0px;
-        --grid-mobile-horizontal-spacing: 0.0px;
+        --grid-desktop-vertical-spacing: 12px;
+        --grid-desktop-horizontal-spacing: 12px;
+        --grid-mobile-vertical-spacing: 6.0px;
+        --grid-mobile-horizontal-spacing: 6.0px;
 
         --text-boxes-border-opacity: ;
-        --text-boxes-border-width: px;
-        --text-boxes-radius: px;
+        --text-boxes-border-width: 2px;
+        --text-boxes-radius: 12px;
         --text-boxes-shadow-opacity: ;
-        --text-boxes-shadow-horizontal-offset: px;
-        --text-boxes-shadow-vertical-offset: px;
-        --text-boxes-shadow-blur-radius: px;
+        --text-boxes-shadow-horizontal-offset: 0px;
+        --text-boxes-shadow-vertical-offset: 6px;
+        --text-boxes-shadow-blur-radius: 0px;
 
-        --buttons-radius: px;
-        --buttons-radius-outset: 0px;
-        --buttons-border-width: 0px;
+        --buttons-radius: 40px;
+        --buttons-radius-outset: 42px;
+        --buttons-border-width: 2px;
         --buttons-border-opacity: ;
         --buttons-shadow-opacity: ;
-        --buttons-shadow-horizontal-offset: px;
-        --buttons-shadow-vertical-offset: px;
-        --buttons-shadow-blur-radius: px;
-        --buttons-border-offset: 0px;
+        --buttons-shadow-horizontal-offset: 0px;
+        --buttons-shadow-vertical-offset: 2px;
+        --buttons-shadow-blur-radius: 0px;
+        --buttons-border-offset: 0.3px;
 
-        --inputs-radius: px;
-        --inputs-border-width: px;
+        --inputs-radius: 12px;
+        --inputs-border-width: 2px;
         --inputs-border-opacity: ;
         --inputs-shadow-opacity: ;
-        --inputs-shadow-horizontal-offset: px;
-        --inputs-margin-offset: 0px;
-        --inputs-shadow-vertical-offset: px;
-        --inputs-shadow-blur-radius: px;
-        --inputs-radius-outset: 0px;
+        --inputs-shadow-horizontal-offset: 0px;
+        --inputs-margin-offset: 2px;
+        --inputs-shadow-vertical-offset: 2px;
+        --inputs-shadow-blur-radius: 0px;
+        --inputs-radius-outset: 14px;
 
-        --variant-pills-radius: px;
-        --variant-pills-border-width: px;
+        --variant-pills-radius: 40px;
+        --variant-pills-border-width: 1px;
         --variant-pills-border-opacity: ;
         --variant-pills-shadow-opacity: ;
-        --variant-pills-shadow-horizontal-offset: px;
-        --variant-pills-shadow-vertical-offset: px;
-        --variant-pills-shadow-blur-radius: px;
+        --variant-pills-shadow-horizontal-offset: 0px;
+        --variant-pills-shadow-vertical-offset: 0px;
+        --variant-pills-shadow-blur-radius: 0px;
       }
 
       *,
@@ -177,7 +177,7 @@
       }
     <style>
 
-    <link href="assets/base.css" rel="stylesheet" type="text/css" media="all" /><link rel="preload" as="font" href="" type="font/woff2" crossorigin><link rel="preload" as="font" href="" type="font/woff2" crossorigin><script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+    <link href="assets/base.css" rel="stylesheet" type="text/css" media="all" /><link rel="preload" as="font" href="archivo_n4" type="font/woff2" crossorigin><link rel="preload" as="font" href="mariposa_sans_n4" type="font/woff2" crossorigin><link rel="stylesheet" href="assets/component-predictive-search.css" media="print" onload="this.media='all'"><script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
     if (Shopify.designMode) {
       document.documentElement.classList.add('shopify-design-mode');
     }
@@ -229,5 +229,5 @@
         pauseSlideshow: `sections.slideshow.pause_slideshow`,
         playSlideshow: `sections.slideshow.play_slideshow`,
       }
-    </script></body>
+    </script><script src="assets/predictive-search.js" defer="defer"></script></body>
 </html>

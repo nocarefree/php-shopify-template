@@ -169,7 +169,8 @@ class ShopifyTemplate{
 
 
     public function render($template, $assigns = []) {
-        $this->assigns = $assigns;
+        $config = $this->fileSystem->readJsonFile("config/settings_data");
+        $this->assigns = ['settings'=>$config['current']];
         $this->onlineStoreEditorData = new \Illuminate\Config\Repository();
         $this->context = new Context($this->assigns, ['_app'=>$this]);
         return $this->renderTemplate($template);
