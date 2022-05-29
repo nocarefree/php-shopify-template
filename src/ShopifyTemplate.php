@@ -107,14 +107,12 @@ class ShopifyTemplate{
             $contentForLayout = $this->renderContentLiquid($template);
         }
         $this->context->set('content_for_layout', $contentForLayout);
-        file_put_contents('2.txt', $contentForLayout);
-        exit;
 
         $layout = $this->liquid
             ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_LAYOUT."/". $this->layout))
             ->render($this->context);  
         
-        // file_put_contents('2.txt',$layout);
+        file_put_contents('2.txt',$layout);
 
         return $layout;
     }
@@ -165,9 +163,7 @@ class ShopifyTemplate{
         $this->context->registers['in_section'] = $template;
         $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SECTION."/". $template));
         $html = $this->liquid->render($this->context);
-        $registers = $this->context->registers;
-        unset($registers['in_section']);
-        $this->context->registers = $registers;
+        unset($this->context->registers['in_section']);
         return $html;
     }
 
