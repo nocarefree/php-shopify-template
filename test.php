@@ -8,4 +8,4 @@ $template = new Ncf\ShopifyLiquid\ShopifyTemplate(__DIR__.'/tests/templates/crav
 $contents = $template->render('index',[]);
 
 
-file_put_contents('2.txt',$contents);
+// file_put_contents('2.txt',$contents);

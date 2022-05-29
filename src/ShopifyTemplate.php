@@ -97,38 +97,38 @@ class ShopifyTemplate{
      */
     public function renderTemplate($template){    
 
-        // $type = $this->fileSystem->templateType($template);
-        // $this->onlineStoreEditorData->set('template.type', $template);  
-        // $this->onlineStoreEditorData->set('template.format', $type);    
+        $type = $this->fileSystem->templateType($template);
+        $this->onlineStoreEditorData->set('template.type', $template);  
+        $this->onlineStoreEditorData->set('template.format', $type);    
 
-        // if($type == 'JSON'){
-        //     $contentForLayout = $this->renderContentJson($template);
-        // }else{
-        //     $contentForLayout = $this->renderContentLiquid($template);
-        // }
+        if($type == 'JSON'){
+            $contentForLayout = $this->renderContentJson($template);
+        }else{
+            $contentForLayout = $this->renderContentLiquid($template);
+        }
+        $this->context->set('content_for_layout', $contentForLayout);
+        file_put_contents('2.txt', $contentForLayout);
+        exit;
 
-        $context = new Context($this->assigns, ['_app'=>$this]);
         $layout = $this->liquid
             ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_LAYOUT."/". $this->layout))
-            ->render($context);  
+            ->render($this->context);  
         
-        file_put_contents('2.txt',$layout);
+        // file_put_contents('2.txt',$layout);
 
         return $layout;
     }
 
     public function renderContentLiquid($template){
-        $context = new Context($this->assigns, ['_app'=>$this]);
-        $this->assigns['content_for_layout'] .= $this->liquid
+        return $this->liquid
             ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_TEMPLATE."/". $template))
-            ->render($context);    
+            ->render($this->context);    
     }
 
-    public function renderSnippetLiquid($template, $assigns){
-        $context = new Context($assigns, ['_app'=>$this]);
+    public function renderSnippetLiquid($template){
         return $this->liquid
             ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SNIPPET."/". $template))
-            ->render($context);    
+            ->render($this->context);    
     }
 
     public function renderContentJson($template){
@@ -139,36 +139,49 @@ class ShopifyTemplate{
         $contentForLayout = '';
         foreach($config['order'] as $sectionId){
             $section = $config['sections'][$sectionId];
-            $assigns = $this->assigns;
             $section['id'] = $sectionId;
-            $assigns['section'] = $section;
-            $context = new Context($assigns, ['_app'=>$this]);
-            try{
-                $this->onlineStoreEditorData->set('in_section', $section['type']);
-                $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SECTION."/". $section['type']));
-                // file_put_contents('1.txt', var_export($this->liquid->getRoot()->getNodelist(), true));
 
-                $html = $this->liquid->render($context);
-                
-                $contentForLayout .= $html;
+            $this->context->push();
+            $this->context->set('section', $section);
+            try{
+                $contentForLayout .= $this->renderSectionFile($section['type']);
             }catch(LiquidException $e){
-                $contentForLayout .= 'Liquid error (sections/'.$section['type'].'.liquid line 40):'. $e->getMessage();
+                $contentForLayout .= 'Liquid error (sections/'.$section['type'].'):'. $e->getMessage() . "\n";
             }
+            $this->context->pop();
         }
         $this->onlineStoreEditorData->set('in_section', false);
         return $contentForLayout;
+    }
+
+    public function renderSectionFile($template){
+        
+
+		//禁止section 调用section
+		if(isset($this->context->registers['in_section']) && !empty($this->context->registers['in_section'])){
+			throw new LiquidException(" Cannot render sections '".$template."' inside sections '".$this->context->registers['in_section']."'");
+		}
+
+        $this->context->registers['in_section'] = $template;
+        $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SECTION."/". $template));
+        $html = $this->liquid->render($this->context);
+        $registers = $this->context->registers;
+        unset($registers['in_section']);
+        $this->context->registers = $registers;
+        return $html;
     }
 
 
     public function render($template, $assigns = []) {
         $this->assigns = $assigns;
         $this->onlineStoreEditorData = new \Illuminate\Config\Repository();
+        $this->context = new Context($this->assigns, ['_app'=>$this]);
         return $this->renderTemplate($template);
 
     }
 
     public function getAssigns(){
-		return [];
+		return $this->assigns;
 	}
 
   

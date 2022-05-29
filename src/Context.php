@@ -10,17 +10,33 @@ class Context extends \Liquid\Context{
 
     public function __construct(array $assigns = array(), array $registers = array()){
         parent::__construct($assigns, $registers);
+		$this->app = $this->registers['_app']??null;
     }
 
-	/**
-	 * Replaces []
-	 *
-	 * @param string
-	 *
-	 * @return mixed
-	 */
+	public function push(){
+		if(count($this->assigns) > 15){
+			throw new LiquidException("Nesting too deep");
+		}
+
+		$this->assigns[] = $this->app instanceof ShopifyTemplate ? $this->registers['_app']->getAssigns() : [];
+	
+	}
+	
 	public function get($key) {
 		return $this->resolve($key);
+	}
+
+	public function set($key, $value, $global = false) {
+		if($global){
+			foreach($this->assigns as &$assigns){
+				Arr::set($assigns, $key, $value);
+			}
+		}else{
+			$assigns = &end($this->assigns);
+			Arr::set($assigns, $key, $value);
+		}
+		
+		return $this;
 	}
 
     private function resolve($key) {
@@ -69,7 +85,11 @@ class Context extends \Liquid\Context{
 			}
 		}
 
-		return Arr::get($this->assigns[0], $key, null);
+		return Arr::get($this->lastAssigns(), $key, null);
+	}
+
+	private function lastAssigns(){
+		return end($this->assigns);
 	}
     
 }

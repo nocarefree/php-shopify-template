@@ -48,7 +48,7 @@ class FilterAdditional{
         ];
 
         if(!in_array($input,$allowSvgs)){
-            throw new LiquidException("Unknown SVG placeholder 'collection-7'");
+           return "Unknown SVG placeholder 'collection-7'";
         }
 
         $content = file_get_contents(dirname(dirname(__DIR__)).'/icons/'.$input.'.svg');
