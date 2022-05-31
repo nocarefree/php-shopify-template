@@ -125,7 +125,5 @@ class ShopifyFileSystem implements FileSystem
 			throw new LiquidException("Illegal template path '" .$fullPath . "'");
 		}
 	}
-    
-
 
 }

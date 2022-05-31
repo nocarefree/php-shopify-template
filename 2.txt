@@ -42,7 +42,7 @@
         --font-heading-style: ;
         --font-heading-weight: ;
 
-        --font-body-scale: ;
+        --font-body-scale: 1.0;
         --font-heading-scale: 2.0;
 
         --color-base-text: , , ;
@@ -61,10 +61,10 @@
         --gradient-base-accent-2: ;
 
         --media-padding: px;
-        --media-border-opacity: ;
+        --media-border-opacity: 1.0;
         --media-border-width: 2px;
         --media-radius: 12px;
-        --media-shadow-opacity: ;
+        --media-shadow-opacity: 1.0;
         --media-shadow-horizontal-offset: 0px;
         --media-shadow-vertical-offset: 6px;
         --media-shadow-blur-radius: 0px;
@@ -72,29 +72,29 @@
         --page-width: 120.0rem;
         --page-width-margin: 0rem;
 
-        --card-image-padding: rem;
-        --card-corner-radius: rem;
+        --card-image-padding: 0.0rem;
+        --card-corner-radius: 2.0rem;
         --card-text-alignment: left;
-        --card-border-width: rem;
-        --card-border-opacity: ;
-        --card-shadow-opacity: ;
-        --card-shadow-horizontal-offset: rem;
-        --card-shadow-vertical-offset: rem;
-        --card-shadow-blur-radius: rem;
+        --card-border-width: 1.0rem;
+        --card-border-opacity: 1.0;
+        --card-shadow-opacity: 1.0;
+        --card-shadow-horizontal-offset: 0.0rem;
+        --card-shadow-vertical-offset: 1.0rem;
+        --card-shadow-blur-radius: 0.0rem;
 
-        --badge-corner-radius: rem;
+        --badge-corner-radius: 4.0rem;
 
         --popup-border-width: 2px;
-        --popup-border-opacity: ;
+        --popup-border-opacity: 1.0;
         --popup-corner-radius: 12px;
-        --popup-shadow-opacity: ;
+        --popup-shadow-opacity: 1.0;
         --popup-shadow-horizontal-offset: 0px;
         --popup-shadow-vertical-offset: 2px;
         --popup-shadow-blur-radius: 0px;
 
         --drawer-border-width: 3px;
-        --drawer-border-opacity: ;
-        --drawer-shadow-opacity: ;
+        --drawer-border-opacity: 1.0;
+        --drawer-shadow-opacity: 1.0;
         --drawer-shadow-horizontal-offset: 6px;
         --drawer-shadow-vertical-offset: 6px;
         --drawer-shadow-blur-radius: 0px;
@@ -107,10 +107,10 @@
         --grid-mobile-vertical-spacing: 6.0px;
         --grid-mobile-horizontal-spacing: 6.0px;
 
-        --text-boxes-border-opacity: ;
+        --text-boxes-border-opacity: 1.0;
         --text-boxes-border-width: 2px;
         --text-boxes-radius: 12px;
-        --text-boxes-shadow-opacity: ;
+        --text-boxes-shadow-opacity: 1.0;
         --text-boxes-shadow-horizontal-offset: 0px;
         --text-boxes-shadow-vertical-offset: 6px;
         --text-boxes-shadow-blur-radius: 0px;
@@ -118,8 +118,8 @@
         --buttons-radius: 40px;
         --buttons-radius-outset: 42px;
         --buttons-border-width: 2px;
-        --buttons-border-opacity: ;
-        --buttons-shadow-opacity: ;
+        --buttons-border-opacity: 1.0;
+        --buttons-shadow-opacity: 1.0;
         --buttons-shadow-horizontal-offset: 0px;
         --buttons-shadow-vertical-offset: 2px;
         --buttons-shadow-blur-radius: 0px;
@@ -127,8 +127,8 @@
 
         --inputs-radius: 12px;
         --inputs-border-width: 2px;
-        --inputs-border-opacity: ;
-        --inputs-shadow-opacity: ;
+        --inputs-border-opacity: 1.0;
+        --inputs-shadow-opacity: 1.0;
         --inputs-shadow-horizontal-offset: 0px;
         --inputs-margin-offset: 2px;
         --inputs-shadow-vertical-offset: 2px;
@@ -137,8 +137,8 @@
 
         --variant-pills-radius: 40px;
         --variant-pills-border-width: 1px;
-        --variant-pills-border-opacity: ;
-        --variant-pills-shadow-opacity: ;
+        --variant-pills-border-opacity: 1.0;
+        --variant-pills-shadow-opacity: 0.0;
         --variant-pills-shadow-horizontal-offset: 0px;
         --variant-pills-shadow-vertical-offset: 0px;
         --variant-pills-shadow-blur-radius: 0px;
@@ -186,7 +186,7 @@
 
   <body class="gradient">
     <a class="skip-to-content-link button visually-hidden" href="#MainContent">
-      accessibility.skip_to_text
+      跳到内容
     </a>
 
     
@@ -200,7 +200,7 @@
     
 
     <ul hidden>
-      <li id="a11y-refresh-page-message">accessibility.refresh_page</li>
+      <li id="a11y-refresh-page-message">选择某一选项会使整个页面刷新。</li>
     </ul>
 
     <script>
@@ -213,21 +213,21 @@
       };
 
       window.cartStrings = {
-        error: `sections.cart.cart_error`,
-        quantityError: `sections.cart.cart_quantity_error_html`
+        error: `更新购物车时出错。请重试。`,
+        quantityError: `您只能向购物车添加 [quantity] 件此商品。`
       }
 
       window.variantStrings = {
-        addToCart: `products.product.add_to_cart`,
-        soldOut: `products.product.sold_out`,
-        unavailable: `products.product.unavailable`,
+        addToCart: `添加到购物车`,
+        soldOut: `售罄`,
+        unavailable: `不可用`,
       }
 
       window.accessibilityStrings = {
-        imageAvailable: `products.product.media.image_available`,
-        shareSuccess: `general.share.success_message`,
-        pauseSlideshow: `sections.slideshow.pause_slideshow`,
-        playSlideshow: `sections.slideshow.play_slideshow`,
+        imageAvailable: `图片 [index] 现已在图库视图中可用`,
+        shareSuccess: `链接已复制到剪贴板`,
+        pauseSlideshow: `暂停幻灯片`,
+        playSlideshow: `播放幻灯片`,
       }
     </script><script src="assets/predictive-search.js" defer="defer"></script></body>
 </html>

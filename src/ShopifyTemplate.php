@@ -14,8 +14,10 @@ class ShopifyTemplate{
     const PATH_LAYOUT = 'layout'; 
     const PATH_SECTION = 'sections'; 
     const PATH_SNIPPET = 'snippets'; 
+    const PATH_LOCALE = 'locales'; 
 
     private $onlineStoreEditorData;
+    private $locale;
 
     private $innerTags = [
         'decrement'=> Tags\TagDecrement::class,
@@ -35,7 +37,7 @@ class ShopifyTemplate{
         'stylesheet'=> Tags\TagStylesheet::class,
     ];
     
-    private $innerFilters = [
+    private $staticFilters = [
         Filters\FilterAdditional::class,
         Filters\FilterArray::class,
         Filters\FilterColor::class,
@@ -47,6 +49,10 @@ class ShopifyTemplate{
         Filters\FilterMoney::class,
         Filters\FilterString::class,
         Filters\FilterUrl::class,
+    ];
+
+    private $innerFilters = [
+        Filters\FilterAdditional::class,
     ];
 
     /**
@@ -81,8 +87,12 @@ class ShopifyTemplate{
             $this->liquid->registerTag($name, $tag);
         }
 
-        foreach($this->innerFilters as $filter){
+        foreach($this->staticFilters as $filter){
             $this->liquid->registerFilter($filter);
+        }
+
+        foreach($this->innerFilters as $filter){
+            $this->liquid->registerFilter(new $filter($this));
         }
 
         $this->layout = 'theme';
@@ -108,22 +118,24 @@ class ShopifyTemplate{
         }
         $this->context->set('content_for_layout', $contentForLayout);
 
+        $this->log('layout', $this->layout);
         $layout = $this->liquid
             ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_LAYOUT."/". $this->layout))
             ->render($this->context);  
+                
         
-        file_put_contents('2.txt',$layout);
-
         return $layout;
     }
 
     public function renderContentLiquid($template){
+        $this->log('template', $template);
         return $this->liquid
             ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_TEMPLATE."/". $template))
             ->render($this->context);    
     }
 
     public function renderSnippetLiquid($template){
+        $this->log('snippet', $template);
         return $this->liquid
             ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SNIPPET."/". $template))
             ->render($this->context);    
@@ -131,7 +143,6 @@ class ShopifyTemplate{
 
     public function renderContentJson($template){
         $config = $this->fileSystem->readJsonFile(STATIC::PATH_TEMPLATE."/".$template);
-        $this->onlineStoreEditorData->set('layout', $config['layout']??'');
 
         //独立分析section
         $contentForLayout = '';
@@ -141,6 +152,7 @@ class ShopifyTemplate{
 
             $this->context->push();
             $this->context->set('section', $section);
+
             try{
                 $contentForLayout .= $this->renderSectionFile($section['type']);
             }catch(LiquidException $e){
@@ -148,7 +160,6 @@ class ShopifyTemplate{
             }
             $this->context->pop();
         }
-        $this->onlineStoreEditorData->set('in_section', false);
         return $contentForLayout;
     }
 
@@ -161,8 +172,14 @@ class ShopifyTemplate{
 		}
 
         $this->context->registers['in_section'] = $template;
-        $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SECTION."/". $template));
-        $html = $this->liquid->render($this->context);
+        $html = '';
+        try{
+            $this->log('section', $template);
+            $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SECTION."/". $template));
+            $html = $this->liquid->render($this->context);
+        }catch(\Liquid\LiquidException $e){
+            $html = $e->getMessage();
+        }
         unset($this->context->registers['in_section']);
         return $html;
     }
@@ -180,6 +197,22 @@ class ShopifyTemplate{
     public function getAssigns(){
 		return $this->assigns;
 	}
+
+    public function log($type, $file){
+        $this->logs[] = [$type, $file];
+    }
+
+    
+	public function getLocale(){
+		if(!$this->locale){
+            $default = $this->fileSystem->readJsonFile(static::PATH_LOCALE.'/zh-CN');
+            $extends = $this->fileSystem->readJsonFile(static::PATH_LOCALE.'/zh-CN.schema');
+        
+			$this->locale =  array_merge_recursive($default, $extends);
+		}
+        return $this->locale;
+	}
+    
 
   
 
