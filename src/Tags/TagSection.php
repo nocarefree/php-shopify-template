@@ -11,72 +11,17 @@
 
 namespace Ncf\ShopifyLiquid\Tags;
 
-use Liquid\AbstractTag;
-use Liquid\Document;
+use Liquid\Tags\TagRender;
 use Liquid\Context;
-use Liquid\Liquid;
-use Liquid\LiquidException;
-use Liquid\Regexp;
-use Liquid\Template;
-use Ncf\ShopifyLiquid\ShopifyFileSystem;
+use Ncf\ShopifyLiquid\ShopifyTemplate;
 
-/**
- * Includes another, partial, template
- *
- * Example:
- *
- *     {% section 'foo' %}
- *
- */
-class TagSection extends AbstractTag
+class TagSection extends TagRender
 {
-	/**
-	 * @var string The name of the template
-	 */
-	private $templateName;
-	/**
-	 * @var Document The Document that represents the included template
-	 */
-	private $document;
-
-	/**
-	 * @var string The Source Hash
-	 */
-	protected $hash;
-
-	/**
-	 * Constructor
-	 *
-	 * @param string $markup
-	 * @param array $tokens
-	 * @param FileSystem $fileSystem
-	 *
-	 * @throws \Liquid\LiquidException
-	 */
-	public function __construct($markup, array &$tokens, ShopifyFileSystem $fileSystem = null) {
-		$regex = new Regexp('/("[^"]+"|\'[^\']+\')/');
-
-		if ($regex->match($markup)) {
-			$this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
-		}else{
-			throw new LiquidException("Error in tag 'section'");
-		}
-
-		parent::__construct($markup, $tokens, $fileSystem);
+	
+	function parse(){
+		parent::parse();
+		$this->options['file']['path'] = ShopifyTemplate::PATH_SECTION ;
 	}
-
-	/**
-	 * Parses the tokens
-	 *
-	 * @param array $tokens
-	 *
-	 * @throws \Liquid\LiquidException
-	 */
-	public function parse(array &$tokens) {
-
-	}
-
-
 
 	/**
 	 * Renders the node
@@ -86,16 +31,14 @@ class TagSection extends AbstractTag
 	 * @return string
 	 */
 	public function render(Context $context) {
-		$result = '';
-
-		if(!isset($context->registers['_app']) || !$context->registers['_app'] instanceof \Ncf\ShopifyLiquid\ShopifyTemplate){
+		if(isset($context->registers['in_section']) && $context->registers['in_section']){
 			return '';
 		}
 
-		$context->push();
-		$context->registers['_app']->renderSectionFile($this->templateName, $context);
-		$context->pop();
+		$this->options['parameters'] = [
+			'section'=>'settings.sections.'. $context->get($this->options['file']['name']),
+		];
 
-		return $result;
+		return parent::render($context);
 	}
 }

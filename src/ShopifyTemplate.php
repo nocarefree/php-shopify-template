@@ -2,11 +2,9 @@
 
 namespace Ncf\ShopifyLiquid;
 
-use Liquid\Tag\TagDecrement;
-use Liquid\Template;
-use Ncf\Liquid\Filters\FilterAdditional;
-use Illuminate\Support\Str;
+
 use Liquid\LiquidException;
+use Liquid\Context;
 
 class ShopifyTemplate{
 
@@ -16,29 +14,28 @@ class ShopifyTemplate{
     const PATH_SNIPPET = 'snippets'; 
     const PATH_LOCALE = 'locales'; 
 
-    private $onlineStoreEditorData;
-    private $locale;
-
-    private $innerTags = [
-        'decrement'=> Tags\TagDecrement::class,
-        'increment'=> Tags\TagIncrement::class,
-        'layout'=> Tags\TagLayout::class,
-        'paginate'=> Tags\TagPaginate::class,
-        'style'=> Tags\TagStyle::class,
-        'tablerow'=> Tags\TagTablerow::class,
+    private $tags = [
+        //Template
         'render'=> Tags\TagRender::class,
+        'layout'=> Tags\TagLayout::class,
         'section'=> Tags\TagSection::class,
-        'schema'=> Tags\TagSchema::class,
+
+        //Iteration
+        'paginate'=> Tags\TagPaginate::class,
+
+        //Html
         'form'=> Tags\TagForm::class,
-
-
+        'style'=> Tags\TagStyle::class,
+        
+        //Config
+        'schema'=> Tags\TagSchema::class,
+        
         //section template
         'javascript'=> Tags\TagJavascript::class,
         'stylesheet'=> Tags\TagStylesheet::class,
     ];
     
-    private $staticFilters = [
-        Filters\FilterAdditional::class,
+    private $filters = [
         Filters\FilterArray::class,
         Filters\FilterColor::class,
         Filters\FilterFont::class,
@@ -51,9 +48,6 @@ class ShopifyTemplate{
         Filters\FilterUrl::class,
     ];
 
-    private $innerFilters = [
-        Filters\FilterAdditional::class,
-    ];
 
     /**
      * 默认样式
@@ -69,33 +63,30 @@ class ShopifyTemplate{
      */
 	private $sections;
     
-
     /**
-     * 加载shopify用filter tag
+     * 默认语言
      *
-     * @param [type] $path
-     * @param [type] $cache
+     * @var [type]
      */
+    private $locale;
+
+  
+
     public function __construct($themePath = null, $cache = null)
     {
         $this->fileSystem = new ShopifyFileSystem($themePath);
-        $this->liquid = new \Liquid\Template();
-        $this->liquid->setFileSystem($this->fileSystem);
+        $this->liquid = new \Liquid\Template($this->fileSystem);
 
-
-        foreach($this->innerTags as $name => $tag){
-            $this->liquid->registerTag($name, $tag);
+        $this->liquid->registerTags($this->tags);
+        foreach($this->filters as $filter){
+            $this->liquid->registerFilters($filter);
         }
 
-        foreach($this->staticFilters as $filter){
-            $this->liquid->registerFilter($filter);
-        }
+        $add = new Filters\FilterAdditional($this);
+        $this->liquid->registerFilters($add);
+        
 
-        foreach($this->innerFilters as $filter){
-            $this->liquid->registerFilter(new $filter($this));
-        }
-
-        $this->layout = 'theme';
+        $this->layout = 'theme'; 
         $this->sections = [];
     }
 
@@ -108,19 +99,23 @@ class ShopifyTemplate{
     public function renderTemplate($template){    
 
         $type = $this->fileSystem->templateType($template);
-        $this->onlineStoreEditorData->set('template.type', $template);  
-        $this->onlineStoreEditorData->set('template.format', $type);    
+        // $this->onlineStoreEditorData->set('template.type', $template);  
+        // $this->onlineStoreEditorData->set('template.format', $type);    
 
         if($type == 'JSON'){
             $contentForLayout = $this->renderContentJson($template);
         }else{
             $contentForLayout = $this->renderContentLiquid($template);
         }
+
+        $contentForLayout = '<!-- BEGIN template -->' .$contentForLayout .'<!-- END template -->';
+
         $this->context->set('content_for_layout', $contentForLayout);
 
         $this->log('layout', $this->layout);
+
         $layout = $this->liquid
-            ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_LAYOUT."/". $this->layout))
+            ->parse($this->fileSystem->readTemplateSource(STATIC::PATH_LAYOUT."/". $this->layout))
             ->render($this->context);  
                 
         
@@ -130,15 +125,25 @@ class ShopifyTemplate{
     public function renderContentLiquid($template){
         $this->log('template', $template);
         return $this->liquid
-            ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_TEMPLATE."/". $template))
+            ->parse($this->fileSystem->readTemplateSource(STATIC::PATH_TEMPLATE."/". $template))
             ->render($this->context);    
+    }
+
+    public function parseSnippetLiquid($path){
+        return $this->liquid
+            ->parseFile(STATIC::PATH_SNIPPET."/". $path);
     }
 
     public function renderSnippetLiquid($template){
         $this->log('snippet', $template);
-        return $this->liquid
-            ->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SNIPPET."/". $template))
-            ->render($this->context);    
+
+        $this->context->push();
+        $this->context->merge($data);
+        $content =  $this->liquid
+            ->parse($this->fileSystem->readTemplateSource(STATIC::PATH_SNIPPET."/". $template))
+            ->render($this->context);  
+            $this->context->pop();    
+        return $content; 
     }
 
     public function renderContentJson($template){
@@ -149,47 +154,48 @@ class ShopifyTemplate{
         foreach($config['order'] as $sectionId){
             $section = $config['sections'][$sectionId];
             $section['id'] = $sectionId;
-
-            $this->context->push();
-            $this->context->set('section', $section);
-
             try{
-                $contentForLayout .= $this->renderSectionFile($section['type']);
+                $contentForLayout .= $this->renderSectionFile($section['type'], ['section'=> $section]);
             }catch(LiquidException $e){
                 $contentForLayout .= 'Liquid error (sections/'.$section['type'].'):'. $e->getMessage() . "\n";
             }
-            $this->context->pop();
         }
         return $contentForLayout;
     }
 
-    public function renderSectionFile($template){
-        
+    public function renderSectionFile($template, $data = []){
+        $this->log('section', $template);
 
 		//禁止section 调用section
 		if(isset($this->context->registers['in_section']) && !empty($this->context->registers['in_section'])){
 			throw new LiquidException(" Cannot render sections '".$template."' inside sections '".$this->context->registers['in_section']."'");
 		}
 
+        $this->context->push();
+        $this->context->merge($data);
         $this->context->registers['in_section'] = $template;
-        $html = '';
+
         try{
-            $this->log('section', $template);
-            $this->liquid->parse($this->fileSystem->readTemplateFile(STATIC::PATH_SECTION."/". $template));
-            $html = $this->liquid->render($this->context);
+            $content =  $this->liquid
+                ->parse($this->fileSystem->readTemplateSource(STATIC::PATH_SECTION."/". $template))
+                ->render($this->context);  
+                
         }catch(\Liquid\LiquidException $e){
-            $html = $e->getMessage();
+            $content = $e->getMessage();
         }
+
         unset($this->context->registers['in_section']);
-        return $html;
+        $this->context->pop();    
+        
+        return $content;
     }
 
 
     public function render($template, $assigns = []) {
-        $config = $this->fileSystem->readJsonFile("config/settings_data");
-        $this->assigns = ['settings'=>$config['current']];
-        $this->onlineStoreEditorData = new \Illuminate\Config\Repository();
-        $this->context = new Context($this->assigns, ['_app'=>$this]);
+
+        $this->config = $this->fileSystem->readJsonFile("config/settings_data");
+        $this->context = new Context($assigns, ['settings'=>$this->config['current']]);
+
         return $this->renderTemplate($template);
 
     }

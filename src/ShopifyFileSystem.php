@@ -14,7 +14,7 @@ namespace Ncf\ShopifyLiquid;
 use Liquid\LiquidException;
 use Liquid\FileSystem;
 use Liquid\Regexp;
-use Liquid\Liquid;
+use Liquid\Source;
 
 class ShopifyFileSystem implements FileSystem
 {
@@ -47,6 +47,13 @@ class ShopifyFileSystem implements FileSystem
 		$this->validPath($fullPath);
 		return file_get_contents($fullPath);
 	}
+
+	public function readTemplateSource($path) {
+		$fullPath = $this->fullPath($path).'.liquid';
+		$this->validPath($fullPath);
+		return new Source(file_get_contents($fullPath), $fullPath);
+	}
+
 
 	/**
 	 * 读取json文件
@@ -120,8 +127,7 @@ class ShopifyFileSystem implements FileSystem
 	 * @return string
 	 */
 	public function validPath($fullPath) {
-		$rootRegex = new Regexp('/' . preg_quote(realpath($this->root.'/'), '/') . '/');
-		if (!$rootRegex->match(realpath($fullPath)) || !file_exists($fullPath)) {
+		if (! preg_match('/' . preg_quote(realpath($this->root), '/') . '/', realpath($fullPath)) || !file_exists($fullPath)) {
 			throw new LiquidException("Illegal template path '" .$fullPath . "'");
 		}
 	}

@@ -11,17 +11,11 @@
 
 namespace Ncf\ShopifyLiquid\Tags;
 
-use Liquid\AbstractBlock;
-use Liquid\Document;
+use Liquid\Nodes\Block;
 use Liquid\Context;
-use Liquid\Liquid;
-use Liquid\LiquidException;
-use Liquid\Regexp;
-use Liquid\Template;
-use Ncf\ShopifyLiquid\ShopifyFileSystem;
 
 
-class TagSchema extends AbstractBlock
+class TagSchema extends Block
 {
     public function render(Context $context){
         return '';

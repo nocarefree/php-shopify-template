@@ -13,6 +13,16 @@ class FilterAdditional{
         $this->app = $template;
     }
 
+    public static function default($input , $value = ''){
+        if(is_array($value)){
+            if(isset($value['allow_false']) && $value['allow_false'] = true){
+                $value = $input == false ? false : $value[0];
+            }else{
+                $value = $value[0];
+            }
+        }
+        return $input ? $input : $value;
+    }
 
     public function default_errors(array $error ,$array){
         return 'Please enter a valid ' .implode(' ',$error['messages']);
@@ -48,7 +58,7 @@ class FilterAdditional{
 
     public function t($input, $data = []){
         $content = Arr::get($this->app->getLocale(), $input);
-
+        
         if(is_array($data)){
             foreach($data as $key=>$value){
                 $content = preg_replace("/{{\s*".preg_quote($key,'/')."\s*}}/", $value, $content);
