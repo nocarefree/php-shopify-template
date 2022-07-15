@@ -22,10 +22,6 @@ use Liquid\Parser;
 // }
 
 
-// echo encryptDecrypt('DpIiOLsahj', "KsrOe4RgzmWWAboOXdTg/XxsUpvUIg+DuloeBZs64cY=", 0);exit;
-
-
-
 
 
 
