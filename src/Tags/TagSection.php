@@ -35,10 +35,22 @@ class TagSection extends TagRender
 			return '';
 		}
 
+		$name = $context->get($this->options['file']['name']);
+
 		$this->options['parameters'] = [
-			'section'=>'settings.sections.'. $context->get($this->options['file']['name']),
+			'section'=>'settings.sections.'. $name,
 		];
 
-		return parent::render($context);
+		$result = parent::render($context);
+
+		$context->registers['headers'][$name] = [
+			'stylesheet' => $context->registers['stylesheet']??'',
+			'javascript' => $context->registers['javascript']??'' 
+		];
+
+		unset($context->registers['stylesheet']);
+		unset($context->registers['javascript']);
+
+		return $result;
 	}
 }

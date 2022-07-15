@@ -26,6 +26,9 @@ use Liquid\Parser;
 
 
 
+
+
+
 $template = new Ncf\ShopifyLiquid\ShopifyTemplate(__DIR__.'/tests/templates/crave');
 $contents = $template->render('index',[
     'request' => [

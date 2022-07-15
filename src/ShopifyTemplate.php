@@ -110,16 +110,20 @@ class ShopifyTemplate{
 
         $contentForLayout = '<!-- BEGIN template -->' .$contentForLayout .'<!-- END template -->';
 
-        $this->context->set('content_for_layout', $contentForLayout);
-
-        $this->log('layout', $this->layout);
+        $this->context->set('content_for_layout',$contentForLayout);
+        $this->setContentHeader();
 
         $layout = $this->liquid
             ->parse($this->fileSystem->readTemplateSource(STATIC::PATH_LAYOUT."/". $this->layout))
             ->render($this->context);  
                 
-        
         return $layout;
+    }
+
+    private function setContentHeader(){
+        if(isset($this->context->registers['header']['stylesheet'])){
+            $stylesheet = implode("\n",$this->context->registers['header']['stylesheet']);
+        }
     }
 
     public function renderContentLiquid($template){
@@ -134,28 +138,30 @@ class ShopifyTemplate{
             ->parseFile(STATIC::PATH_SNIPPET."/". $path);
     }
 
-    public function renderSnippetLiquid($template){
-        $this->log('snippet', $template);
+    // public function renderSnippetLiquid($template){
+    //     $this->log('snippet', $template);
 
-        $this->context->push();
-        $this->context->merge($data);
-        $content =  $this->liquid
-            ->parse($this->fileSystem->readTemplateSource(STATIC::PATH_SNIPPET."/". $template))
-            ->render($this->context);  
-            $this->context->pop();    
-        return $content; 
-    }
+    //     $this->context->push();
+    //     $this->context->merge($data);
+    //     $content =  $this->liquid
+    //         ->parse($this->fileSystem->readTemplateSource(STATIC::PATH_SNIPPET."/". $template))
+    //         ->render($this->context);  
+    //         $this->context->pop();    
+    //     return $content; 
+    // }
 
     public function renderContentJson($template){
         $config = $this->fileSystem->readJsonFile(STATIC::PATH_TEMPLATE."/".$template);
 
         //独立分析section
         $contentForLayout = '';
+
+
         foreach($config['order'] as $sectionId){
             $section = $config['sections'][$sectionId];
             $section['id'] = $sectionId;
             try{
-                $contentForLayout .= $this->renderSectionFile($section['type'], ['section'=> $section]);
+                $contentForLayout .= $this->renderSectionFile($section['type'], $section);
             }catch(LiquidException $e){
                 $contentForLayout .= 'Liquid error (sections/'.$section['type'].'):'. $e->getMessage() . "\n";
             }
@@ -164,15 +170,13 @@ class ShopifyTemplate{
     }
 
     public function renderSectionFile($template, $data = []){
-        $this->log('section', $template);
-
 		//禁止section 调用section
 		if(isset($this->context->registers['in_section']) && !empty($this->context->registers['in_section'])){
 			throw new LiquidException(" Cannot render sections '".$template."' inside sections '".$this->context->registers['in_section']."'");
 		}
 
         $this->context->push();
-        $this->context->merge($data);
+        $this->context->set('section',$data);
         $this->context->registers['in_section'] = $template;
 
         try{
@@ -183,7 +187,6 @@ class ShopifyTemplate{
         }catch(\Liquid\LiquidException $e){
             $content = $e->getMessage();
         }
-
         unset($this->context->registers['in_section']);
         $this->context->pop();    
         
