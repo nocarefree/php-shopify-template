@@ -1,5 +1,9 @@
 {
     "name": "nocarefree/php-shopify-liquid",
+    "description": "Shopify Liquid template engine for php",
+    "keywords": ["php","liquid", "template","shopify"],
+    "license": "MIT",
+	"type": "library",
     "autoload": {
         "psr-4": {
             "Ncf\\ShopifyLiquid\\": "src/"
@@ -12,6 +16,7 @@
         }
     ],
     "require": {
+        "php": ">= 7.0",
         "illuminate/support": "^9.13",
         "nocarefree/php-liquid": "dev-master",
         "illuminate/config": "^9.14",
