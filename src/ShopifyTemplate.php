@@ -5,6 +5,7 @@ namespace Ncf\ShopifyLiquid;
 
 use Liquid\LiquidException;
 use Liquid\Context;
+use Liquid\Template;
 
 class ShopifyTemplate{
 
@@ -55,27 +56,19 @@ class ShopifyTemplate{
      * @var string
      */
 	private $layout;
-
-    /**
-     * 默认模块
-     *
-     * @var [object]
-     */
-	private $sections;
     
-    /**
-     * 默认语言
-     *
-     * @var [type]
-     */
-    private $locale;
 
-  
 
-    public function __construct($themePath = null, $cache = null)
+    public function __construct($themePath, $cache = null)
     {
         $this->fileSystem = new ShopifyFileSystem($themePath);
-        $this->liquid = new \Liquid\Template($this->fileSystem);
+        $this->liquid = new Template($this->fileSystem);
+        $this->context = new Context();
+        $this->layout = 'theme'; 
+    }
+
+    protected function init(){
+        $this->context->registers['config'] = $this->fileSystem->readJsonFile("config/settings_data");
 
         $this->liquid->registerTags($this->tags);
         foreach($this->filters as $filter){
@@ -84,10 +77,14 @@ class ShopifyTemplate{
 
         $add = new Filters\FilterAdditional($this);
         $this->liquid->registerFilters($add);
-        
+    }
 
-        $this->layout = 'theme'; 
-        $this->sections = [];
+    public function setLocal($iso_code){
+        $default = $this->fileSystem->readJsonFile(static::PATH_LOCALE.'/' . $iso_code);
+        $extends = $this->fileSystem->readJsonFile(static::PATH_LOCALE.'/'.$iso_code.'schema');
+    
+        $this->context->registers['locale'] =  array_merge_recursive($default, $extends);
+        return $this;
     }
 
     /**
@@ -127,7 +124,6 @@ class ShopifyTemplate{
     }
 
     public function renderContentLiquid($template){
-        $this->log('template', $template);
         return $this->liquid
             ->parse($this->fileSystem->readTemplateSource(STATIC::PATH_TEMPLATE."/". $template))
             ->render($this->context);    
@@ -137,18 +133,6 @@ class ShopifyTemplate{
         return $this->liquid
             ->parseFile(STATIC::PATH_SNIPPET."/". $path);
     }
-
-    // public function renderSnippetLiquid($template){
-    //     $this->log('snippet', $template);
-
-    //     $this->context->push();
-    //     $this->context->merge($data);
-    //     $content =  $this->liquid
-    //         ->parse($this->fileSystem->readTemplateSource(STATIC::PATH_SNIPPET."/". $template))
-    //         ->render($this->context);  
-    //         $this->context->pop();    
-    //     return $content; 
-    // }
 
     public function renderContentJson($template){
         $config = $this->fileSystem->readJsonFile(STATIC::PATH_TEMPLATE."/".$template);
@@ -193,35 +177,16 @@ class ShopifyTemplate{
         return $content;
     }
 
-
     public function render($template, $assigns = []) {
-
-        $this->config = $this->fileSystem->readJsonFile("config/settings_data");
-        $this->context = new Context($assigns, ['settings'=>$this->config['current']]);
-
+        $this->context->merge($assigns);
         return $this->renderTemplate($template);
-
     }
 
-    public function getAssigns(){
-		return $this->assigns;
-	}
-
-    public function log($type, $file){
-        $this->logs[] = [$type, $file];
+    public function getContext(){
+        return $this->context;
     }
 
-    
-	public function getLocale(){
-		if(!$this->locale){
-            $default = $this->fileSystem->readJsonFile(static::PATH_LOCALE.'/zh-CN');
-            $extends = $this->fileSystem->readJsonFile(static::PATH_LOCALE.'/zh-CN.schema');
-        
-			$this->locale =  array_merge_recursive($default, $extends);
-		}
-        return $this->locale;
-	}
-    
+
 
   
 
