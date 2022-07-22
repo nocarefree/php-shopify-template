@@ -64,7 +64,8 @@ class ShopifyTemplate{
         $this->fileSystem = new ShopifyFileSystem($themePath);
         $this->liquid = new Template($this->fileSystem);
         $this->context = new Context();
-        $this->layout = 'theme'; 
+
+        $this->init();
     }
 
     protected function init(){
@@ -79,9 +80,9 @@ class ShopifyTemplate{
         $this->liquid->registerFilters($add);
     }
 
-    public function setLocal($iso_code){
+    public function setLocale($iso_code){
         $default = $this->fileSystem->readJsonFile(static::PATH_LOCALE.'/' . $iso_code);
-        $extends = $this->fileSystem->readJsonFile(static::PATH_LOCALE.'/'.$iso_code.'schema');
+        $extends = $this->fileSystem->readJsonFile(static::PATH_LOCALE.'/'.$iso_code.'.schema');
     
         $this->context->registers['locale'] =  array_merge_recursive($default, $extends);
         return $this;
@@ -177,7 +178,8 @@ class ShopifyTemplate{
         return $content;
     }
 
-    public function render($template, $assigns = []) {
+    public function render($template, $layout = 'theme', $assigns = []) {
+        $this->layout = $layout; 
         $this->context->merge($assigns);
         return $this->renderTemplate($template);
     }
