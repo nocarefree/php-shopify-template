@@ -13,7 +13,6 @@ namespace Ncf\ShopifyLiquid;
 
 use Liquid\LiquidException;
 use Liquid\FileSystem;
-use Liquid\Regexp;
 use Liquid\Source;
 
 class ShopifyFileSystem implements FileSystem

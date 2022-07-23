@@ -2,7 +2,7 @@
 
 namespace Ncf\ShopifyLiquid;
 
-
+use Illuminate\Support\Arr;
 use Liquid\LiquidException;
 use Liquid\Context;
 use Liquid\Template;
@@ -86,6 +86,16 @@ class ShopifyTemplate{
     
         $this->context->registers['locale'] =  array_merge_recursive($default, $extends);
         return $this;
+    }
+
+    public function translate($input, $data = []){
+        $content = Arr::get($this->context->registers['locale'], $input);
+        if(is_array($data)){
+            foreach($data as $key=>$value){
+                $content = preg_replace("/{{\s*".preg_quote($key,'/')."\s*}}/", $value, $content);
+            } 
+        }
+        return $content;
     }
 
     /**

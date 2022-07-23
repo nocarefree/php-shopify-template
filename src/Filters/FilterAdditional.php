@@ -2,8 +2,6 @@
 
 namespace Ncf\ShopifyLiquid\Filters;
 
-use Liquid\LiquidException;
-use Illuminate\Support\Arr;
 
 //  https://shopify.dev/api/liquid/filters/array-filters
 
@@ -57,14 +55,7 @@ class FilterAdditional{
     }
 
     public function t($input, $data = []){
-        $content = Arr::get($this->app->getLocale(), $input);
-        
-        if(is_array($data)){
-            foreach($data as $key=>$value){
-                $content = preg_replace("/{{\s*".preg_quote($key,'/')."\s*}}/", $value, $content);
-            } 
-        }
-        return $content;
+        return $this->app->translate($input, $data);
     }
 
     public function json($input){
