@@ -56,15 +56,15 @@ class FilterUrl{
     }
 
     public static function link_to_tag($input){
-        return null;
+        return "<a href=".urlencode($input).">".$input."</a>";
     }
 
     public static function link_to_add_tag($input){
-        return null;
+        return "<a href=".urlencode($input).">".$input."</a>";
     }
     
     public static function link_to_remove_tag ($input){
-        return null;
+        return "<a href=".urlencode($input).">".$input."</a>";
     }
         
     public static function payment_type_img_url ($input){
