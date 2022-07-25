@@ -11,13 +11,9 @@
 
 namespace Ncf\ShopifyLiquid\Tags;
 
-use Liquid\Nodes\Block;
-use Liquid\Context;
+use Ncf\ShopifyLiquid\SectionAttributeNode;
 
-
-class TagSchema extends Block
+class TagSchema extends SectionAttributeNode
 {
-    public function render(Context $context){
-        return '';
-    }
+
 }

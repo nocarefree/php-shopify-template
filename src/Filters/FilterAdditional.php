@@ -85,7 +85,7 @@ class FilterAdditional{
            return "Unknown SVG placeholder 'collection-7'";
         }
 
-        $content = file_get_contents(dirname(dirname(__DIR__)).'/icons/'.$input.'.svg');
+        $content = file_get_contents(__DIR__.'/../../assets/icons/'.$input.'.svg');
         if(is_string($class)){
             $content = str_replace('<svg','<svg class="'.$class.'"', $content);
         }

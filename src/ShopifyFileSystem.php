@@ -102,7 +102,7 @@ class ShopifyFileSystem implements FileSystem
             return 'LIQUID';
         }
 
-		return null;
+		throw new FileNoFound("Illegal template path '" .$fullPath . "'");
 	}
 
     /**
@@ -127,7 +127,7 @@ class ShopifyFileSystem implements FileSystem
 	 */
 	public function validPath($fullPath) {
 		if (! preg_match('/' . preg_quote(realpath($this->root), '/') . '/', realpath($fullPath)) || !file_exists($fullPath)) {
-			throw new LiquidException("Illegal template path '" .$fullPath . "'");
+			throw new FileNoFound("Illegal template path '" .$fullPath . "'");
 		}
 	}
 

@@ -1,24 +1,19 @@
 <?php
 
-
+/**
+ * This file is part of the Liquid package.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package Liquid
+ */
 
 namespace Ncf\ShopifyLiquid\Tags;
 
-use Liquid\Nodes\Block;
-use Liquid\Context;
+use Ncf\ShopifyLiquid\SectionAttributeNode;
 
-/**
- *
- * Example:
- *
- *     {% javascript %} This will be ignored {% endjavascript %}
- */
-class TagJavascript extends Block
+class TagJavascript extends SectionAttributeNode
 {
 
-    public function render(Context $context){
-        $context->registers['javascript'] = parent::render($context) ;
-        return '';
-    }
-    
 }

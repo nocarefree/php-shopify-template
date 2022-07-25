@@ -32,7 +32,9 @@ class TagSection extends TagRender
 	 */
 	public function render(Context $context) {
 		if(isset($context->registers['in_section']) && $context->registers['in_section']){
-			return '';
+			$name = $context->registers['in_section'];
+			$line = $this->getStream()->getLineno();
+			return "Liquid error (sections/{$name}liquid line $line): Cannot render sections inside sections";
 		}
 
 		$name = $context->get($this->options['file']['name']);
@@ -41,16 +43,12 @@ class TagSection extends TagRender
 			'section'=>'settings.sections.'. $name,
 		];
 
-		$result = parent::render($context);
-
-		$context->registers['headers'][$name] = [
-			'stylesheet' => $context->registers['stylesheet']??'',
-			'javascript' => $context->registers['javascript']??'' 
-		];
-
-		unset($context->registers['stylesheet']);
-		unset($context->registers['javascript']);
-
+		try{
+			$result = parent::render($context);
+		}catch(\Exception $e){
+			$result = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
+		}
+		
 		return $result;
 	}
 }
