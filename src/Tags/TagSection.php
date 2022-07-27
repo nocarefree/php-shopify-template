@@ -18,7 +18,11 @@ use Liquid\Parser;
 
 class TagSection extends Block
 {
-	
+	/**
+	 * Section 不用预先解析
+	 *
+	 * @return void
+	 */	
 	function parse(){
 		if(preg_match(Parser::REGEX_STRING, $this->options['expression'], $matches, 0, 0) ){
 			$this->options['section'] = $matches[1]?:$matches[2];
@@ -46,7 +50,7 @@ class TagSection extends Block
 
 		try{
 			$evn =  $this->context->registers['app'];
-			return $evn->renderSection($name);
+			return $evn->renderSection(['id'=>$name,'type'=>$name]);
 		}catch(\Exception $e){
 			$result = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
 		}

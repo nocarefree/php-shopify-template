@@ -117,6 +117,10 @@ class ShopifyTemplate{
         return $setting;
     }
 
+    public function getSectionSetting(){
+        return [];
+    }
+
     //设置语言
     public function setLocale($iso_code){
         $default = $this->disk->readJsonFile(ShopifyFileSystem::PATH_LOCALE.'/' . $iso_code);
@@ -143,8 +147,8 @@ class ShopifyTemplate{
     }
 
     public function parseTemplate($name){    
-        $type = $this->disk->templateType($name);
-        if($type == 'JSON'){
+        $this->context->register['type'] = $this->disk->templateType($name);
+        if($this->context->register['type'] == 'JSON'){
             return $this->parseTemplateJson($name);
         }else{
             return $this->liquid->parseFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
@@ -156,7 +160,18 @@ class ShopifyTemplate{
     }
 
     protected function parseSection($name){
-        return $this->sectionLiquid->parseFile(ShopifyFileSystem::PATH_SECTION."/". $name);
+        $node = $this->sectionLiquid->parseFile(ShopifyFileSystem::PATH_SECTION."/". $name);
+        if($node instanceof \Liquid\Nodes\Document){
+            foreach($node->getNodelist() as $sub){
+                foreach($this->sectionTags as $tag){
+                    if(is_object($sub) && $sub instanceof $tag){
+                        $this->registers[$tag] = $sub->options['content'];
+                        break;
+                    }
+                }
+            }
+        }
+        return $node;
     }
 
     protected function parseSnippet($name){
@@ -173,10 +188,12 @@ class ShopifyTemplate{
         $config = $this->disk->readJsonFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
         $sections = [];
         foreach($config['sections'] as $sectionId=>$data){
-            $sections[$sectionId] = $data;
             if(!in_array($sectionId, $config['order'])){
                 $sections[$sectionId] = new LiquidException("Section id '{$sectionId}' must exist in order");
             }else{ 
+                $data['id'] = $sectionId;
+                $sections[$sectionId] = $data;
+
                 // if(isset($this->sections[$name])){
                 //     $data['node'] = $this->sections[$name];
                 //     $sections[$sectionId] = $data;
@@ -184,12 +201,12 @@ class ShopifyTemplate{
                 //     $sections[$sectionId] = new LiquidException('Failed to render section "'.$data['type'].'": section file "'.$data['type'].'.liquid" does not exist');
                 // }
 
-                try{
-                    $data['node'] = $this->parseSection($name);
-                    $sections[$sectionId] = $data;
-                }catch(FileNoFound){
-                    $sections[$sectionId] = new LiquidException('Failed to render section "'.$data['type'].'": section file "'.$data['type'].'.liquid" does not exist');
-                }
+                // try{
+                //     $data['node'] = $this->parseSection($name);
+                //     $sections[$sectionId] = $data;
+                // }catch(FileNoFound){
+                //     $sections[$sectionId] = new LiquidException('Failed to render section "'.$data['type'].'": section file "'.$data['type'].'.liquid" does not exist');
+                // }
             }
         }
         foreach($config['order'] as $sectionId){
@@ -226,7 +243,7 @@ class ShopifyTemplate{
 
         $this->context->set('content_for_header', '#content_for_header#');   
 
-        if(is_array($data)){
+        if($this->context->register['type'] == 'JSON'){
             $content = $this->renderTemplateSections($data['settings']);
         }else{
             $content = $data->render($this->context);
@@ -245,8 +262,8 @@ class ShopifyTemplate{
     public function renderTemplateSections($sections){
         $contentForLayout = '';
         foreach($sections as $section){
-            if($section['error']){
-                $contentForLayout .= '<!-- Liquid error:  '.$section['error'].' -->';
+            if($section instanceof LiquidException){
+                $contentForLayout .= '<!-- Liquid error:  '.$section->getMessage().' -->';
             }else{
                 try{
                     $contentForLayout .= $this->renderSection($section);
@@ -274,21 +291,18 @@ class ShopifyTemplate{
 
         $name = $sectionConfig['type'];
 
+        $settings = $this->getSectionSetting($sectionConfig);
+
         $this->context->push();
         $this->context->registers['in_section'] = $sectionConfig['type'];
-        $this->context->set('section', $this->settingsToValue($sectionConfig['type']));
+        $this->context->set('section', $settings);
 
         try{
-            if(!isset($this->section[$name])){
-                $content = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
-            }else{
-                $this->context->register['sections'][] = $sectionConfig;
-                $content = $this->sections[$name]->render($this->context);
-            }
-
-            
-        }catch(\Liquid\LiquidException $e){
-            $content = $e->getMessage();
+            $this->context->registers['sections'][] = $settings;
+            $node = $this->parseSection($name);
+            $node->render($this->context);
+        }catch(FileNoFound $e){
+            $content = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
         }
         $this->context->pop(); 
         unset($this->context->registers['in_section']);

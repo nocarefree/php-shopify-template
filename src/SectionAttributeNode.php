@@ -13,12 +13,19 @@ namespace Ncf\ShopifyLiquid;
 
 use Liquid\Nodes\Block;
 use Liquid\Context;
+use Liquid\LiquidException;
 use Liquid\Parser;
 
 
 class SectionAttributeNode extends Block
 {
     public function parse(){
+        $this->options['content'] = [];
+        if($this->level >1){
+            $name = $this->options['name'];
+			$line = $this->getStream()->getLineno();
+            throw new LiquidException("Liquid syntax error (line {$line}): '{$name}' tag must not be nested inside other tags");
+        }
         
         $this->startBlock();
         $content = '';
@@ -33,22 +40,11 @@ class SectionAttributeNode extends Block
             }
 			$stream->next();
 		}
+        $this->options['content'] = $content;
 		$this->assertMissingDelimitation();
-
-        $name = $this->options['name'];
-        if(!isset($this->template->root->options[$name])){
-            $this->template->options[$name] = $content;
-        }else{
-            $line = $this->getStream()->getLineno();
-            throw new \Liquid\LiquidException("Liquid syntax error (line {$line}): Duplicate entries for tag: {$name}");
-        }
     }
 
     public function render(Context $context){
         return '';  
-    }
-
-    public function has($name){
-        return isset($this->template->options[$name]);
     }
 }
