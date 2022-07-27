@@ -3,20 +3,19 @@
 namespace Ncf\ShopifyLiquid;
 
 class ContentForLayout{
-    function __construct($context , $template)
+    function __construct($context , $content)
     {
         $this->context = $context;
-        $this->template = $template;
+        $this->content = $content;
+
+        $this->sections = $this->context->registers['sections']??[];
+        unset($this->context->registers['sections']);
     }
 
     function __toString(){
-
-        $content = $this->template['content'];
-        foreach($this->template['sections'] as $section){
+        foreach($this->sections as  $section){
             $this->context->registers['sections'][] = $section;
-            $this->context->registers['sectionsData'][] = $section;
-            $this->context->registers['sectionsSchema'][] = $section;
         }
-        return  '<!-- BEGIN template -->' .$content .'<!-- END template -->';
+        return  '<!-- BEGIN template -->' .$this->content .'<!-- END template -->';
     }
 }
