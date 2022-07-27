@@ -239,7 +239,7 @@ class ShopifyTemplate{
         }else{
             $content = (string)$content;
         }
-        return str_replace('content_for_header', $this->setctionToHeader(), $content);
+        return str_replace('#content_for_header#', $this->setctionToHeader(), $content);
     }
 
     public function renderTemplateSections($sections){
