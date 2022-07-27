@@ -103,7 +103,7 @@ class ShopifyTemplate{
     }
 
     //初始化section 参数
-    protected function settingsToValue($name, $settings){
+    protected function settingsToValue($name){
         $schema = $this->getSectionSchema($name);
         foreach($schema as $row){
             if(isset($row['settings'])){
@@ -249,7 +249,7 @@ class ShopifyTemplate{
                 $contentForLayout .= '<!-- Liquid error:  '.$section['error'].' -->';
             }else{
                 try{
-                    $contentForLayout .= $this->renderSection($section['type'], $section['settings']);
+                    $contentForLayout .= $this->renderSection($section);
                 }catch(\Liquid\LiquidException $e){
                     $contentForLayout .= $e->getMessage();
                 }
@@ -270,15 +270,19 @@ class ShopifyTemplate{
     //     return ['content'=>$contentForLayout,'layout'=>$layout,'sections'=>$sections] ;
     // }
 
-    public function renderSection($name, $settings){
+    public function renderSection($sectionConfig){
+
+        $name = $sectionConfig['type'];
+
         $this->context->push();
-        $this->context->registers['in_section'] = $name;
-        $this->context->set('section', $this->settingsToValue($name , $settings??null));
+        $this->context->registers['in_section'] = $sectionConfig['type'];
+        $this->context->set('section', $this->settingsToValue($sectionConfig['type']));
 
         try{
             if(!isset($this->section[$name])){
                 $content = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
             }else{
+                $this->context->register['sections'][] = $sectionConfig;
                 $content = $this->sections[$name]->render($this->context);
             }
 
