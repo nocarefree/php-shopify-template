@@ -16,7 +16,7 @@ use Liquid\Context;
 class TagLayout extends Node
 {
     public function render(Context $context){
-        $context->registers['layout'] = $this->options['expression'];
+        $context->registers['layout'] = $context->get($this->options['expression']);
         return '';
     }
 

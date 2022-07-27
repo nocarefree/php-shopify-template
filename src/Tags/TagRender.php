@@ -11,13 +11,18 @@
 
 namespace Ncf\ShopifyLiquid\Tags;
 
-use Ncf\ShopifyLiquid\ShopifyTemplate;
-
+use Ncf\ShopifyLiquid\ShopifyFileSystem;
 
 class TagRender extends \Liquid\Tags\TagRender
 {
-	function parse(){
-		parent::parse();
-		$this->options['file']['path'] = ShopifyTemplate::PATH_SNIPPET;
+	function parseFile($filename){
+		parent::parseFile(ShopifyFileSystem::PATH_SNIPPET . '/' . $filename); 
+
+		if($this->options['node'] && isset($this->options['node']->options['sections'])){
+			$sections = $this->template->getRoot()->options['sections']??[];
+			$this->template->getRoot()->options['sections'] = array_merge($sections, $this->options['node']->options['sections']);
+		}
 	}
+
+	
 }

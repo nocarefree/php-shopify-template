@@ -14,9 +14,16 @@ namespace Ncf\ShopifyLiquid;
 use Liquid\LiquidException;
 use Liquid\FileSystem;
 use Liquid\Source;
+use Illuminate\Support\Str;
 
 class ShopifyFileSystem implements FileSystem
 {
+	const PATH_TEMPLATE  = 'templates';
+    const PATH_LAYOUT = 'layout'; 
+    const PATH_SECTION = 'sections'; 
+    const PATH_SNIPPET = 'snippets'; 
+    const PATH_LOCALE = 'locales'; 
+
     /**
      * 主题路径
      *
@@ -83,6 +90,26 @@ class ShopifyFileSystem implements FileSystem
 		return $fullPath;
 	}
 
+	public function getSections() {
+        return $this->getLiquidFiles(static::PATH_SECTION);
+	}
+
+	public function getSnippets() {
+        return $this->getLiquidFiles(static::PATH_SNIPPET);
+	}
+
+	public function getLiquidFiles($path){
+		$fullPath = $this->root . '/'. $path;
+		$list = scandir($fullPath);
+		$files = [];
+		foreach($list as $file){
+			if(Str::endsWith($file, '.liquid')){
+				$files[] = Str::before($file, '.liquid');
+			}
+		}
+		return $files;
+	}
+
     /**
 	 * 主题下页面的模板文件路径
 	 *
@@ -94,7 +121,7 @@ class ShopifyFileSystem implements FileSystem
 	public function templateType($path) {
 
         $path = ltrim($path, '/');
-        $fullPath = $this->root . "/" . ShopifyTemplate::PATH_TEMPLATE ."/" . $path;
+        $fullPath = $this->root . "/" . static::PATH_TEMPLATE ."/" . $path;
 
         if(file_exists($fullPath . '.json')){
             return 'JSON';

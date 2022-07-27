@@ -11,16 +11,21 @@
 
 namespace Ncf\ShopifyLiquid\Tags;
 
-use Liquid\Tags\TagRender;
+use Liquid\Nodes\Block;
 use Liquid\Context;
-use Ncf\ShopifyLiquid\ShopifyTemplate;
+use Liquid\LiquidException;
+use Liquid\Parser;
 
-class TagSection extends TagRender
+class TagSection extends Block
 {
 	
 	function parse(){
-		parent::parse();
-		$this->options['file']['path'] = ShopifyTemplate::PATH_SECTION ;
+		if(preg_match(Parser::REGEX_STRING, $this->options['expression'], $matches, 0, 0) ){
+			$this->options['section'] = $matches[1]?:$matches[2];
+			$this->template->getRoot()->options['sections'][] = $this->options['section'];
+		}else{
+			throw new LiquidException("Valid syntax: section '[type]'");
+		}
 	}
 
 	/**
@@ -37,14 +42,11 @@ class TagSection extends TagRender
 			return "Liquid error (sections/{$name}liquid line $line): Cannot render sections inside sections";
 		}
 
-		$name = $context->get($this->options['file']['name']);
-
-		$this->options['parameters'] = [
-			'section'=>'settings.sections.'. $name,
-		];
+		$name = $this->options['section'];
 
 		try{
-			$result = parent::render($context);
+			$evn =  $this->context->registers['app'];
+			return $evn->renderSection($name);
 		}catch(\Exception $e){
 			$result = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
 		}

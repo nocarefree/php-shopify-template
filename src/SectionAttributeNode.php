@@ -37,13 +37,18 @@ class SectionAttributeNode extends Block
 
         $name = $this->options['name'];
         if(!isset($this->template->root->options[$name])){
-            $this->template->root->options[$name] = $content;
+            $this->template->options[$name] = $content;
         }else{
             $line = $this->getStream()->getLineno();
             throw new \Liquid\LiquidException("Liquid syntax error (line {$line}): Duplicate entries for tag: {$name}");
         }
     }
+
     public function render(Context $context){
-        return '';
+        return '';  
+    }
+
+    public function has($name){
+        return isset($this->template->options[$name]);
     }
 }
