@@ -1,12 +1,12 @@
 <?php 
 
-namespace Ncf\ShopifyLiquid;
+namespace Ncf\ShopifyTemplate;
 
 use Illuminate\Support\Arr;
 use Liquid\LiquidException;
 use Liquid\Context;
 use Liquid\Environment;
-use Ncf\ShopifyLiquid\Drops\FontDrop;
+use Ncf\ShopifyTemplate\Drops\FontDrop;
 
 class ShopifyTemplate{
 
@@ -61,60 +61,52 @@ class ShopifyTemplate{
         $this->disk = new ShopifyFileSystem($themePath); //锁定目录
         $this->context = new Context(); //创建数据流
 
-        $this->liquid = new Environment($this->disk); //创建template解析环境
-        $this->liquid->variable = Variable::class;
+        $this->env = new Environment($this->disk); //创建template解析环境
+        $this->env->variable = Variable::class;
 
-        $this->liquid->registerTags($this->tags);
+        $this->env->registerTags($this->tags);
         foreach($this->filters as $filter){
-            $this->liquid->registerFilters($filter);
+            $this->env->registerFilters($filter);
         }
-        $this->liquid->registerFilters(new Filters\FilterAdditional($this));
+        $this->env->registerFilters(new Filters\FilterAdditional($this));
 
-        $this->sectionLiquid = clone $this->liquid; //创建section解析环境
+        $this->sectionLiquid = clone $this->env; //创建section解析环境
         $this->sectionLiquid->registerTags($this->sectionTags);
 
-        $this->init();
+        // $this->init();
     }
 
-    public function init(){
 
+    public function init(){
+        
         $this->context->registers['app'] = $this;
         $this->context->registers['sections'] = [];
+
+        $this->context->set('content_for_header', new Drops\ContentForHeader($this)); 
 
         $this->setLocale('zh-CN');
         $this->setFontFamilies(new Drops\FontFamiliesDrop());
 
-        //获取Theme配置
-        $this->schema = $this->disk->readJsonFile("config/settings_schema_data");
-        $config = $this->disk->readJsonFile("config/settings_data");
-        $this->config = $this->settingsToValue($this->schema, $config['current']??$config['default']);
-
         //加载所有SECTION
-        // $files = $this->disk->getSections();
-        // foreach($files as $file){
-        //     $this->sections[$file] = $this->parseSection($file);
-        // }
+        $files = $this->disk->getSections();
+        foreach($files as $file){
+            $this->sections[$file] = $this->parseSection($file);
+        }
 
-        //加载所有SECTION
-        // $files = $this->disk->get();
-        // foreach($files as $file){
-        //     $this->snippets[$file] = $this->parseSnippet($file);
-        // }
+        //加载所有Snippets
+        $files = $this->disk->get();
+        foreach($files as $file){
+            $this->snippets[$file] = $this->parseSnippet($file);
+        }
     }
 
-    //初始化section 参数
-    protected function settingsToValue($name){
-        $schema = $this->getSectionSchema($name);
-        foreach($schema as $row){
-            if(isset($row['settings'])){
-                foreach($row['settings'] as $setting){
-                    if($setting['type'] == 'font_picker'){
-                        $settings[$setting['id']] = new FontDrop($settings[$setting['id']]);
-                    }
-                }
-            }
-        }
-        return $setting;
+    public function initData(){
+        
+        $common['settings'] = new Drops\ThemeDrop(
+            $this->disk->readJsonFile("config/settings_schema_data"), 
+            $this->disk->readJsonFile("config/settings_data")
+        );
+        // $common['request'] = new RequestDrop();
     }
 
     public function getSectionSetting(){
@@ -151,27 +143,32 @@ class ShopifyTemplate{
         if($this->context->register['type'] == 'JSON'){
             return $this->parseTemplateJson($name);
         }else{
-            return $this->liquid->parseFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
+            return $this->env->parseFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
         }       
     }
 
     public function parseLayout($name){ 
-        return $this->liquid->parseFile(ShopifyFileSystem::PATH_LAYOUT."/". $name);
+        return $this->env->parseFile(ShopifyFileSystem::PATH_LAYOUT."/". $name);
     }
 
     protected function parseSection($name){
-        $node = $this->sectionLiquid->parseFile(ShopifyFileSystem::PATH_SECTION."/". $name);
-        if($node instanceof \Liquid\Nodes\Document){
-            foreach($node->getNodelist() as $sub){
-                foreach($this->sectionTags as $tag){
-                    if(is_object($sub) && $sub instanceof $tag){
-                        $this->registers[$tag] = $sub->options['content'];
-                        break;
+        if(!isset($this->sections[$name])){
+            $node = $this->sectionLiquid->parseFile(ShopifyFileSystem::PATH_SECTION."/". $name);
+            if($node instanceof \Liquid\Nodes\Document){
+                $this->sections[$name]['node'] = $node;
+                foreach($node->getNodelist() as $sub){
+                    foreach($this->sectionTags as $tag){
+                        if(is_object($sub) && $sub instanceof $tag){
+                            $this->sections[$name][$tag] = $sub->options['content'];
+                            break;
+                        }
                     }
                 }
+            }else{
+                $this->sections[$name] = null;
             }
         }
-        return $node;
+        return $this->sections[$name];
     }
 
     protected function parseSnippet($name){
@@ -189,29 +186,15 @@ class ShopifyTemplate{
         $sections = [];
         foreach($config['sections'] as $sectionId=>$data){
             if(!in_array($sectionId, $config['order'])){
-                $sections[$sectionId] = new LiquidException("Section id '{$sectionId}' must exist in order");
+                throw new LiquidException("Section id '{$sectionId}' must exist in order");
             }else{ 
                 $data['id'] = $sectionId;
                 $sections[$sectionId] = $data;
-
-                // if(isset($this->sections[$name])){
-                //     $data['node'] = $this->sections[$name];
-                //     $sections[$sectionId] = $data;
-                // }else{
-                //     $sections[$sectionId] = new LiquidException('Failed to render section "'.$data['type'].'": section file "'.$data['type'].'.liquid" does not exist');
-                // }
-
-                // try{
-                //     $data['node'] = $this->parseSection($name);
-                //     $sections[$sectionId] = $data;
-                // }catch(FileNoFound){
-                //     $sections[$sectionId] = new LiquidException('Failed to render section "'.$data['type'].'": section file "'.$data['type'].'.liquid" does not exist');
-                // }
             }
         }
         foreach($config['order'] as $sectionId){
             if(!isset($sections[$sectionId])){
-                $sections[$sectionId] = new LiquidException("Section id '{$sectionId}' must exist in sections");
+                throw new LiquidException("Section id '{$sectionId}' must exist in sections");
             }
         }
 
@@ -221,8 +204,9 @@ class ShopifyTemplate{
         return $sections;
     }
 
+
     public function parseTemplateLiquid($name){
-        $node = $this->liquid->parseFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
+        $node = $this->env->parseFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
         return $node;
     }
 
@@ -241,8 +225,6 @@ class ShopifyTemplate{
 
         $data = $this->parseTemplate($name);
 
-        $this->context->set('content_for_header', '#content_for_header#');   
-
         if($this->context->register['type'] == 'JSON'){
             $content = $this->renderTemplateSections($data['settings']);
         }else{
@@ -251,12 +233,12 @@ class ShopifyTemplate{
 
         $layout = $this->context->registers['layout']??'theme';
         if($layout){
-            $this->context->set('content_for_layout', new ContentForLayout($this->context, $content));
+            $this->context->set('content_for_layout', new Drops\ContentForLayout($this->context, $content));
             $content = $this->parseLayout($layout)->render($this->context);  
         }else{
             $content = (string)$content;
         }
-        return str_replace('#content_for_header#', $this->setctionToHeader(), $content);
+        return str_replace('content_for_header', $this->setctionToHeader(), $content);
     }
 
     public function renderTemplateSections($sections){
@@ -287,21 +269,17 @@ class ShopifyTemplate{
     //     return ['content'=>$contentForLayout,'layout'=>$layout,'sections'=>$sections] ;
     // }
 
-    public function renderSection($sectionConfig){
+    public function renderSection($name, $config = []){
 
-        $name = $sectionConfig['type'];
-
-        $settings = $this->getSectionSetting($sectionConfig);
 
         $this->context->push();
-        $this->context->registers['in_section'] = $sectionConfig['type'];
-        $this->context->set('section', $settings);
+        $this->context->registers['in_section'] = $name;
+        $this->context->set('section', new \Drops\ThemeSectionDrop($this, $name, $config));
 
-        try{
-            $this->context->registers['sections'][] = $settings;
-            $node = $this->parseSection($name);
-            $node->render($this->context);
-        }catch(FileNoFound $e){
+        $node = $this->parseSection($name);
+        if($node){
+            $content = $node->render($this->context);
+        }else{
             $content = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
         }
         $this->context->pop(); 
@@ -318,8 +296,8 @@ class ShopifyTemplate{
     public function getContentForHeader(){
         $javascript = false;
         $stylesheet = false;
-        if($this->liquid->getRoot() && $this->liquid->getRoot()->options['sections']){
-            $sections = $this->liquid->getRoot()->options['sections'];
+        if($this->env->getRoot() && $this->env->getRoot()->options['sections']){
+            $sections = $this->env->getRoot()->options['sections'];
             foreach($sections as $section=>$v){
                 if(isset($this->sections[$v])){
                     if(isset($this->sections[$v]->options['javascript'])){
@@ -347,7 +325,7 @@ class ShopifyTemplate{
     //     $this->context->set('content_for_layout',$contentForLayout);
     //     $this->setContentHeader();
 
-    //     $layout = $this->liquid
+    //     $layout = $this->env
     //         ->parse($this->disk->readTemplateSource(ShopifyFileSystem::PATH_LAYOUT."/". $this->layout))
     //         ->render($this->context);  
                 
@@ -356,13 +334,13 @@ class ShopifyTemplate{
 
 
     // public function renderContentLiquid($template){
-    //     return $this->liquid
+    //     return $this->env
     //         ->parse($this->disk->readTemplateSource(ShopifyFileSystem::PATH_TEMPLATE."/". $template))
     //         ->render($this->context);    
     // }
 
     // public function parseSnippetLiquid($path){
-    //     return $this->liquid
+    //     return $this->env
     //         ->parseFile(ShopifyFileSystem::PATH_SNIPPET."/". $path);
     // }
 
@@ -395,7 +373,7 @@ class ShopifyTemplate{
     //     $content = null;
     //     $this->context->registers['in_section'] = $template;
     //     try{
-    //         $this->liquid->parse($this->disk->readTemplateSource(ShopifyFileSystem::PATH_SECTION."/". $template));
+    //         $this->env->parse($this->disk->readTemplateSource(ShopifyFileSystem::PATH_SECTION."/". $template));
     //         unset($this->context->registers['in_section']);
     //     }catch(\Liquid\LiquidException $e){
     //         unset($this->context->registers['in_section']);
@@ -409,7 +387,7 @@ class ShopifyTemplate{
     //     $this->context->push();
     //     $this->context->set('section', $data);
     //     try{
-    //         $content = $this->liquid->render($this->context);  
+    //         $content = $this->env->render($this->context);  
     //     }catch(\Liquid\LiquidException $e){
     //         $content = $e->getMessage();
     //     }

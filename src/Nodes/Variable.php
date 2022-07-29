@@ -1,6 +1,6 @@
 <?php
 
-namespace Ncf\ShopifyLiquid;
+namespace Ncf\ShopifyTemplate\Nodes;
 
 class Variable extends \Liquid\Nodes\Variable{
 

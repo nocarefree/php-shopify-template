@@ -1,9 +1,9 @@
 <?php
 
-namespace Ncf\ShopifyLiquid;
+namespace Ncf\ShopifyTemplate\Drops;
 
-class ContentForLayout{
-    function __construct($context , $content)
+class ContentForHeader extends \Liquid\Models\Drop{
+    function __construct($app)
     {
         $this->context = $context;
         $this->content = $content;

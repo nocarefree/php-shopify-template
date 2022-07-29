@@ -9,7 +9,7 @@
  * @package Liquid
  */
 
-namespace Ncf\ShopifyLiquid\Tags;
+namespace Ncf\ShopifyTemplate\Tags;
 
 use Liquid\Nodes\Block;
 use Liquid\Context;

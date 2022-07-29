@@ -1,6 +1,6 @@
 <?php 
 
-namespace Ncf\ShopifyLiquid\Drops;
+namespace Ncf\ShopifyTemplate\Drops;
 
 class FontDrop extends \Liquid\Models\Drop{
     public $allowModifies = [

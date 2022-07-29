@@ -9,26 +9,25 @@
  * @package Liquid
  */
 
-namespace Ncf\ShopifyLiquid\Tags;
+namespace Ncf\ShopifyTemplate\Tags;
 
-use Liquid\Nodes\Block;
+use Liquid\Nodes\Node;
 use Liquid\Context;
-use Liquid\LiquidException;
+use Liquid\Environment;
 use Liquid\Parser;
+use Liquid\TokenStream;
 
-class TagSection extends Block
+class TagSection extends Node
 {
-	/**
-	 * Section 不用预先解析
-	 *
-	 * @return void
-	 */	
-	function parse(){
+	function parse(Environment $env, TokenStream $stream)
+	{
 		if(preg_match(Parser::REGEX_STRING, $this->options['expression'], $matches, 0, 0) ){
-			$this->options['section'] = $matches[1]?:$matches[2];
-			$this->template->getRoot()->options['sections'][] = $this->options['section'];
+			$section = $matches[1]?:$matches[2];
+			$this->options['section'] = $section;
+
 		}else{
-			throw new LiquidException("Valid syntax: section '[type]'");
+			$this->error = "Valid syntax: section '[type]'";
+			$env->addSyntaxError($this->error);
 		}
 	}
 
@@ -42,15 +41,13 @@ class TagSection extends Block
 	public function render(Context $context) {
 		if(isset($context->registers['in_section']) && $context->registers['in_section']){
 			$name = $context->registers['in_section'];
-			$line = $this->getStream()->getLineno();
+			$line = $this->lineno;
 			return "Liquid error (sections/{$name}liquid line $line): Cannot render sections inside sections";
 		}
 
 		$name = $this->options['section'];
-
 		try{
-			$evn =  $this->context->registers['app'];
-			return $evn->renderSection(['id'=>$name,'type'=>$name]);
+			return $context->registers['env']->renderSection($name);
 		}catch(\Exception $e){
 			$result = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
 		}

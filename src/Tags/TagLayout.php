@@ -2,7 +2,7 @@
 
 
 
-namespace Ncf\ShopifyLiquid\Tags;
+namespace Ncf\ShopifyTemplate\Tags;
 
 use Liquid\Nodes\Node;
 use Liquid\Context;

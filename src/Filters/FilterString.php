@@ -1,6 +1,6 @@
 <?php 
 
-namespace Ncf\ShopifyLiquid\Filters;
+namespace Ncf\ShopifyTemplate\Filters;
 
 use Illuminate\Support\Str;
 
