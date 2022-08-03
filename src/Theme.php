@@ -74,6 +74,10 @@ class Theme{
         $this->sectionEnv->registerTags($this->sectionTags);
     }
 
+    public function getFileSystem(){
+        return $this->disk;
+    }
+
 
     public function init(){
         

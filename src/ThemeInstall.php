@@ -10,7 +10,7 @@ class ThemeInstall{
     }
 
     protected function checkLayout(){
-
+        $this->theme->parseLayout();
     }
 
     protected function checkSections(){
