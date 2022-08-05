@@ -10,6 +10,14 @@ use Ncf\ShopifyTemplate\Drops\FontDrop;
 
 class Theme{
 
+    const PATH_TEMPLATE  = 'templates';
+    const PATH_LAYOUT = 'layout'; 
+    const PATH_SECTION = 'sections'; 
+    const PATH_SNIPPET = 'snippets'; 
+    const PATH_LOCALE = 'locales'; 
+    const PATH_CONFIG = 'config'; 
+    const PATH_ASSET = 'assets';
+
     private $tags = [
         //Template
         'render'=> Tags\TagRender::class,
@@ -72,12 +80,21 @@ class Theme{
 
         $this->sectionEnv = clone $this->env; //创建section解析环境
         $this->sectionEnv->registerTags($this->sectionTags);
+
+        $this->installTheme();
     }
 
     public function getFileSystem(){
         return $this->disk;
     }
 
+    public function installTheme(){
+        $install = new ThemeInstall($this);
+        $install->run();
+    }
+
+
+    
 
     public function init(){
         
@@ -89,23 +106,7 @@ class Theme{
         $this->setLocale('zh-CN');
         $this->setFontFamilies(new Drops\FontFamiliesDrop());
 
-        //加载所有SECTION
-        $files = $this->disk->getSections();
-        foreach($files as $file){
-            $this->layout[$file] = $this->parseSection($file);
-        }
-
-        //加载所有SECTION
-        $files = $this->disk->getSections();
-        foreach($files as $file){
-            $this->sections[$file] = $this->parseSection($file);
-        }
-
-        //加载所有Snippets
-        $files = $this->disk->get();
-        foreach($files as $file){
-            $this->snippets[$file] = $this->parseSnippet($file);
-        }
+ 
     }
 
     public function initData(){

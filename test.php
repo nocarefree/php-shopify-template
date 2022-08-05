@@ -25,23 +25,23 @@ use Liquid\Parser;
 
 
 
-$template = new Ncf\ShopifyTemplate\ShopifyTemplate(__DIR__.'/tests/templates/crave');
-$contents = $template->render('index',[
-    'request' => [
-        'locale' => [
-            'iso_code' => 'cn',
-        ]
-    ],
-    'site_name'=>'test.store',
-    'title'=>"首页",
-    'url'=> 'http://store.com',
-    'type'=>"index",
-    'description' => 'description',
-    'product' => [],
-    'all_products' => [],
-    'canonical_url' => 'http://store.com',
-]);
+$template = new Ncf\ShopifyTemplate\Theme(__DIR__.'/tests/templates/crave');
+// $contents = $template->render('index',[
+//     'request' => [
+//         'locale' => [
+//             'iso_code' => 'cn',
+//         ]
+//     ],
+//     'site_name'=>'test.store',
+//     'title'=>"首页",
+//     'url'=> 'http://store.com',
+//     'type'=>"index",
+//     'description' => 'description',
+//     'product' => [],
+//     'all_products' => [],
+//     'canonical_url' => 'http://store.com',
+// ]);
 
 
-file_put_contents('2.txt',$contents);
+// file_put_contents('2.txt',$contents);
 

@@ -7,9 +7,6 @@ namespace Ncf\ShopifyTemplate\Filters;
 
 class FilterAdditional{
 
-    public function __construct($template){
-        $this->app = $template;
-    }
 
     public static function default($input , $value = ''){
         if(is_array($value)){
@@ -54,15 +51,15 @@ class FilterAdditional{
         return str_replace($key, '<strong class="highlight">'.$key.'</strong>', $input);
     }
 
-    public function t($input, $data = []){
-        return $this->app->translate($input, $data);
-    }
+    // public function t($input, $data = []){
+    //     return $this->app->translate($input, $data);
+    // }
 
-    public function json($input){
+    public static function json($input){
         return $input?json_encode($input):'';
     }
 
-    public function placeholder_svg_tag($input, $class){
+    public static function placeholder_svg_tag($input, $class){
         $allowSvgs = [
             'collection-1',
             'collection-2',
