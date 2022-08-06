@@ -25,4 +25,12 @@ class SectionAttributeNode extends TagComment
             $env->addSyntaxError("Liquid syntax error (line {$line}): '{$name}' tag must not be nested inside other tags");
         }
     }
+
+    public function getContent(){
+        $content = '';
+        foreach($this->nodelist as $node){
+            $content .= $node;
+        } 
+        return $node;
+    }
 }

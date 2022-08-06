@@ -47,7 +47,8 @@ class TagSection extends Node
 
 		$name = $this->options['section'];
 		try{
-			return $context->registers['env']->renderSection($name);
+			$app = $context->registers['app'];
+			$result = $app->renderSection($app);
 		}catch(\Exception $e){
 			$result = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
 		}

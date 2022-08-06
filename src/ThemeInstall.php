@@ -3,21 +3,23 @@
 namespace Ncf\ShopifyTemplate;
 
 use Illuminate\Support\Str;
+use Liquid\LiquidException;
 
 class ThemeInstall{
 
     function __construct($path)
     {
         $this->disk = new FileSystem($path); 
-        $this->cache = new ThemeCache();
 
-        $this->layouts = [];
-        $this->templates = [];
-        $this->sections = []; 
-        $this->snippets = [];
-        $this->locales = [];
-        $this->config = [];
-        $this->assets = [];
+        $this->env = new Envs\BaseEnv;
+        $this->sectionEnv = new Envs\sectionEnv;
+        $this->layoutEnv = new Envs\layoutEnv;
+
+        $this->env->debug = true;
+        $this->sectionEnv->debug = true;
+        $this->layoutEnv->debug = true;
+
+        $this->files = [];
     }
 
     protected function getTypeName($file, $path){
@@ -28,82 +30,147 @@ class ThemeInstall{
     }
 
     protected function getLayout($file){
-        if($name = $this->getTypeName($file, Theme::PATH_LAYOUT)){
-            if(preg_match('/^([\w\._\-\s]+)\.liquid$/', $name, $matches)){
-                $this->layouts[$matches[1]] = $name;
+        if(preg_match('/^'.Theme::PATH_LAYOUT.'\/([\w\._\-\s]+)\.liquid$/', $file, $matches)){
+            $name = $matches[1];
+            $content = $this->disk->get($file);
+            try{
+                $this->files[] = [
+                    'name' => $name,
+                    'path' => Theme::PATH_LAYOUT,
+                    'content' => $content,
+                    'node' => $this->layoutEnv->parse($content),
+                ];
                 return true;
+            }catch(LiquidException $e){
+                return null;
             }
         }
         return null;
     }
 
     protected function getSection($file){
-        if($name = $this->getTypeName($file, Theme::PATH_SECTION)){
-            if(preg_match('/^([\w\._\-\s]+)\.liquid$/', $name, $matches)){
-                $this->sections[$matches[1]] = $name;
+        if(preg_match('/^'.Theme::PATH_SECTION.'\/([\w\._\-\s]+)\.liquid$/', $file, $matches)){
+            $name = $matches[1];
+            $content = $this->disk->get($file);
+            try{
+                $this->files[] = [
+                    'name' => $name,
+                    'path' => Theme::PATH_SECTION,
+                    'content' => $content,
+                    'node' => $this->sectionEnv->parse($content),
+                ];
                 return true;
+            }catch(LiquidException $e){
+                return null;
             }
         }
         return null;
     }
 
     protected function getTemplate($file){
-        if($name = $this->getTypeName($file, Theme::PATH_TEMPLATE)){
-            if(
-                preg_match('/^([\w\._\-\s]+)\.(liquid|json)$/', $name, $matches) 
-                || preg_match('/^(customers\/[\w\._\-\s]+)\.(liquid|json)$/', $name, $matches)
-            ){
-                if(!isset($this->templates[$matches[1]])){
-                    $this->templates[$matches[1]] = $name;
-                    return true;
+        if(
+            preg_match('/^'.Theme::PATH_TEMPLATE.'\/([\w\._\-\s]+)\.(liquid|json)$/', $file, $matches) 
+            || preg_match('/^'.Theme::PATH_TEMPLATE.'\/(customers\/[\w\._\-\s]+)\.(liquid|json)$/', $file, $matches)
+        ){
+            $name = $matches[1];
+            $content = $this->disk->get($file);
+
+            try{
+
+                if($matches[2] == 'json'){
+                    $node = json_decode($content, true);
+                }else{
+                    $node = $this->env->parse($content);
                 }
+
+                $this->files[] = [
+                    'name' => $name,
+                    'type' => strtoupper($matches[2]),
+                    'path' => Theme::PATH_TEMPLATE,
+                    'content' => $content,
+                    'node' => $node,
+                ];
+                return true;
+            }catch(LiquidException $e){
+                return null;
             }
         }
         return null;
     }
 
     protected function getSnippet($file){
-        if($name = $this->getTypeName($file, Theme::PATH_SNIPPET)){
-            if(preg_match('/^([\w\._\-\s]+)\.liquid$/', $name, $matches)){
-                $this->snippets[$matches[1]] = $name;
+        if(preg_match('/^'.Theme::PATH_SNIPPET.'\/([\w\._\-\s]+)\.liquid$/', $file, $matches)){
+            $name = $matches[1];
+            $content = $this->disk->get($file);
+            try{
+                $this->files[] = [
+                    'name' => $name,
+                    'path' => Theme::PATH_SNIPPET,
+                    'content' => $content,
+                    'node' => $this->sectionEnv->parse($content),
+                ];
                 return true;
+            }catch(LiquidException $e){
+                return null;
             }
         }
         return null;
     }
 
     protected function getConfig($file){
-        if( Theme::PATH_CONFIG .'/settings_data.json' == $file ){
-            $this->config['data'] =  $file;
-        }else if(Theme::PATH_CONFIG .'/settings_schema.json' == $file ){
-            $this->config['schema'] =  $file;
-        }else{
+        if( preg_match('/^'.Theme::PATH_CONFIG .'\/(settings_data|settings_schema)\.json$/',$file, $matches) ){
+            $name = $matches[1];
+            $content = $this->disk->get($file);
+            try{
+                $this->files[] = [
+                    'name' => $name,
+                    'path' => Theme::PATH_CONFIG,
+                    'content' => $content,
+                    'node' => json_decode($content, true),
+                ];
+                return true;
+            }catch(LiquidException $e){
+                return null;
+            }
             return null;
         }
         return true;
     }
 
-    protected function getAsset($file){
-        if($name = $this->getTypeName($file, Theme::PATH_ASSET)){
-            if(preg_match('/^[\w\._\-\s]+\.(js|css|jpg|jpeg|gif|png|json|woff)$/', $name)){
-                $this->assets[$name] = $name;
+    protected function getLocale($file){
+        if( preg_match('/^'.Theme::PATH_LOCALE .'\/([\w\._\-\s]+)\.json$/',$file, $matches) ){
+            $name = $matches[1];
+            $content = $this->disk->get($file);
+            try{
+                $this->files[] = [
+                    'name' => $name,
+                    'path' => Theme::PATH_LOCALE,
+                    'content' => $content,
+                    'node' => json_decode($content, true),
+                ];
                 return true;
+            }catch(LiquidException $e){
+                return null;
             }
+            return null;
         }
         return null;
     }
 
-    protected function getLocale($file){
-        if($name = $this->getTypeName($file, Theme::PATH_LOCALE)){
-            if(preg_match('/^([\w\._\-\s]+)\.json$/', $name, $matches)){
-                $this->locales[$matches[1]] = $name;
-                return true;
-            }
+    protected function getAsset($file){
+        if(preg_match('/^'.Theme::PATH_ASSET.'\/[\w\._\-\s]+\.(js|css|jpg|jpeg|gif|png|json|woff)$/', $file)){
+            $this->files[] = [
+                'name' => $file,
+                'path' => Theme::PATH_ASSET,
+                'content' => $this->disk->get($file),
+            ];
+            return true;
         }
         return null;
     }
 
     public function run() {
+        $this->files = [];
 
         $files = $this->disk->getAllFiles('',3);
         $checkFunctions = ['layout','section','template','snippet','config','locale','asset'];
@@ -117,4 +184,8 @@ class ThemeInstall{
             }
         }
 	}
+
+    public function getFiles(){
+        return $this->files;
+    }
 }

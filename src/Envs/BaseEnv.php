@@ -1,6 +1,6 @@
 <?php 
 
-namespace Ncf\ShopifyTemplate;
+namespace Ncf\ShopifyTemplate\Envs;
 
 use Liquid\Environment;
 
@@ -24,7 +24,18 @@ class BaseEnv extends Environment{
             'style'=> Tags\TagStyle::class,
         ]);
 
-        foreach($this->filters as $filter){
+        foreach([
+            Filters\FilterArray::class,
+            Filters\FilterColor::class,
+            Filters\FilterFont::class,
+            Filters\FilterHtml::class,
+            Filters\FilterMath::class,
+            Filters\FilterMedia::class,
+            Filters\FilterMetafield::class,
+            Filters\FilterMoney::class,
+            Filters\FilterString::class,
+            Filters\FilterUrl::class
+        ] as $filter){
             $this->registerFilters($filter);
         }
     }

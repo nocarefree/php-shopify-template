@@ -23,6 +23,11 @@ use Liquid\Parser;
 
 
 
+$server = (new Ncf\ShopifyTemplate\ThemeInstall(__DIR__.'/tests/templates/crave'));
+$server->run();
+
+exit;
+
 
 
 $template = new Ncf\ShopifyTemplate\Theme(__DIR__.'/tests/templates/crave');

@@ -5,8 +5,6 @@ namespace Ncf\ShopifyTemplate;
 use Illuminate\Support\Arr;
 use Liquid\LiquidException;
 use Liquid\Context;
-use Liquid\Environment;
-use Ncf\ShopifyTemplate\Drops\FontDrop;
 
 class Theme{
 
@@ -18,122 +16,130 @@ class Theme{
     const PATH_CONFIG = 'config'; 
     const PATH_ASSET = 'assets';
 
-    private $tags = [
-        //Template
-        'render'=> Tags\TagRender::class,
-        'layout'=> Tags\TagLayout::class,
-        'section'=> Tags\TagSection::class,
 
-        //Iteration
-        'paginate'=> Tags\TagPaginate::class,
-
-        //Html
-        'form'=> Tags\TagForm::class,
-        'style'=> Tags\TagStyle::class,
+    public $inputSettings = [
+        'checkbox' => 'bool',
+        'number' => 'int',
+        'radio' => 'string',
+        'range' => 'int',
+        'select' => 'string',
+        'text' => 'string',
+        'textarea' => 'string',
+        'article' => ArticleDrop::class,
+        'blog' => BlogDrop::class,
+        'collection' => CollectionDrop::class,
+        'collection_list' => CollectionListDrop::class,
+        'color' => ColorDrop::class,
+        'color_background' => 'string',
+        'font_picker' => FontDrop::class,
+        'html' => 'string',
+        'image_picker' => ImageDrop::class,
+        'link_list' => LinkListDrop::class, 
+        'liquid' => LiquidDrop::class,
+        'page' => PageDrop::class,
+        'product' => ProductDrop::class,
+        'product_list' => ProductListDrop::class,
+        'richtext' => 'string',
+        'url' => 'string',
+        'video_url' => 'string',
     ];
 
-    private $sectionTags = [
-        //Config
-        'schema'=> Tags\TagSchema::class,
-        
-        //section template
-        'javascript'=> Tags\TagJavascript::class,
-        'stylesheet'=> Tags\TagStylesheet::class,
-    ];
-    
-    private $filters = [
-        Filters\FilterArray::class,
-        Filters\FilterColor::class,
-        Filters\FilterFont::class,
-        Filters\FilterHtml::class,
-        Filters\FilterMath::class,
-        Filters\FilterMedia::class,
-        Filters\FilterMetafield::class,
-        Filters\FilterMoney::class,
-        Filters\FilterString::class,
-        Filters\FilterUrl::class,
-    ];
-
-    protected $schema;
-    protected $config;
-    protected $process;
-    protected $liquid;
-    protected $sectionEnv;
-
-    protected $sections;
-    protected $snippets;
+    public $drops = '';
 
 
-    public function __construct($themePath, $cache = null)
+    public function __construct(ThemeCache $cache, $isoCode = 'en.default')
     {
-        $this->disk = new ShopifyFileSystem($themePath); //锁定目录
+        $this->cache = $cache;
+        $this->locale = $isoCode;
         $this->context = new Context(); //创建数据流
 
-        $this->env = new Environment($this->disk); //创建template解析环境
-        $this->env->variable = Variable::class;
-
-        $this->env->registerTags($this->tags);
-        foreach($this->filters as $filter){
-            $this->env->registerFilters($filter);
-        }
-        $this->env->registerFilters(new Filters\FilterAdditional($this));
-
-        $this->sectionEnv = clone $this->env; //创建section解析环境
-        $this->sectionEnv->registerTags($this->sectionTags);
-
-        $this->installTheme();
-    }
-
-    public function getFileSystem(){
-        return $this->disk;
-    }
-
-    public function installTheme(){
-        $install = new ThemeInstall($this);
-        $install->run();
-    }
-
-
-    
-
-    public function init(){
-        
-        $this->context->registers['app'] = $this;
-        $this->context->registers['sections'] = [];
-
-        $this->context->set('content_for_header', new Drops\ContentForHeader($this)); 
-
-        $this->setLocale('zh-CN');
-        $this->setFontFamilies(new Drops\FontFamiliesDrop());
-
- 
-    }
-
-    public function initData(){
-        
-        $common['settings'] = new Drops\ThemeDrop(
-            $this->disk->readJsonFile("config/settings_schema_data"), 
-            $this->disk->readJsonFile("config/settings_data")
-        );
-        // $common['request'] = new RequestDrop();
-    }
-
-    public function getSectionSetting(){
-        return [];
+        $this->initDrops();
     }
 
     //设置语言
-    public function setLocale($iso_code){
-        $default = $this->disk->readJsonFile(ShopifyFileSystem::PATH_LOCALE.'/' . $iso_code);
-        $extends = $this->disk->readJsonFile(ShopifyFileSystem::PATH_LOCALE.'/'. $iso_code.'.schema');
+    public function setLocale($isCode){
+        //$this->locale['s'] = $this->cache->get(Theme::PATH_LOCALE, $isoCode);
+        //$extends = $this->disk->readJsonFile(Theme::PATH_LOCALE.'/'. $iso_code.'.schema');
     
-        $this->context->registers['locale'] =  array_merge_recursive($default, $extends);
+        //$this->context->registers['locale'] =  array_merge_recursive($default, $extends);
         return $this;
     }
 
-    //设置字体
-    public function setFontFamilies($font_families){
-        $this->context->registers['font_families'] = $font_families; 
+    public function initDrops(){
+
+        $this->drops['content_for_header'] = new Drops\ContentForHeader();
+        $this->drops['content_for_layout'] = new Drops\ContentForLayout($this->context);
+        $this->drops['families'] = new Drops\FontFamiliesDrop(); 
+        $this->drops['settings'] = new Drops\ThemeDrop($this->cache);
+    }
+
+    public function renderSection($name, $config = []){
+
+        $sectionFile = $this->cache->get(Theme::PATH_SECTION, $name);
+        if(empty($sectionFile)){
+            return "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
+        }
+        $node = $sectionFile['node'];
+
+        $this->context->push();
+        $this->context->registers['in_section'] = $name;
+        $this->context->set('section', new Drops\ThemeSectionDrop($node, $config));
+        $content = $sectionFile['node']->render($this->context);
+        $this->context->pop(); 
+        unset($this->context->registers['in_section']);
+
+        return $content;
+    }
+
+    public function render($template, $data){
+        
+        $file = $this->cache->get(Theme::PATH_TEMPLATE, $template);
+        if(!$file){
+            throw new \Liquid\FileNoFound( Theme::PATH_TEMPLATE.'/', $template );
+        }
+
+        $content = '';
+        $node = $file['node'];
+        $layout = 'theme';
+        if($file['type'] == 'JSON'){
+            foreach($node['order'] as $sectionId){
+                if(isset($node['sections'][$sectionId])){
+                    $section = $node['sections'][$sectionId];
+                    $sectionFile = $this->cache->get(Theme::PATH_SECTION, $section['type']);
+                    
+                    if(empty($sectionFile)){
+                        $content .= "Liquid error: Error in tag 'section' - '".$section['type']."' is not a valid section type";
+                    }else{
+                        $content .= $sectionFile['node']->render($this->context);
+                    }
+                }
+            }
+            if(isset($node['layout'])){
+                $layout = $node['layout'];
+            }
+        }else{
+            $content .= $node->render($this->context);
+            if(isset($this->context->registers['layout'])){
+                $layout = $this->context->registers['layout'];
+            }
+        }
+
+        $layoutFile = $this->cache->get(Theme::PATH_LAYOUT, $layout);
+
+        if(empty($layoutFile)){
+            return $content;
+        }
+
+        $header = $this->drops['content_for_header'];
+        $this->drops['content_for_layout'] = new Drops\ContentForLayout($this, $content);
+
+        $html = $layoutFile->render($this->context);
+
+        if($header && $header instanceof Drops\ContentForHeader){
+            return str_replace((string)$header, $header->toHtml(), $layoutFile->render($this->context));
+        }else{
+            return $html;
+        }
     }
 
     //翻译
@@ -147,108 +153,61 @@ class Theme{
         return $content;
     }
 
-    public function parseTemplate($name){    
-        $this->context->register['type'] = $this->disk->templateType($name);
-        if($this->context->register['type'] == 'JSON'){
-            return $this->parseTemplateJson($name);
-        }else{
-            return $this->env->parseFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
-        }       
-    }
-
-    public function parseLayout($name){ 
-        return $this->env->parseFile(ShopifyFileSystem::PATH_LAYOUT."/". $name);
-    }
-
-    protected function parseSection($name){
-        if(!isset($this->sections[$name])){
-            $node = $this->sectionEnv->parseFile(ShopifyFileSystem::PATH_SECTION."/". $name);
-            if($node instanceof \Liquid\Nodes\Document){
-                $this->sections[$name]['node'] = $node;
-                foreach($node->getNodelist() as $sub){
-                    foreach($this->sectionTags as $tag){
-                        if(is_object($sub) && $sub instanceof $tag){
-                            $this->sections[$name][$tag] = $sub->options['content'];
-                            break;
-                        }
-                    }
-                }
-            }else{
-                $this->sections[$name] = null;
-            }
-        }
-        return $this->sections[$name];
-    }
-
-    protected function parseSnippet($name){
-        return $this->sectionEnv->parseFile(ShopifyFileSystem::PATH_SNIPPET."/". $name);
-    }
-
-    /**
-     * 解析Template json
-     *
-     * @param [type] $name
-     * @return void
-     */
-    public function parseTemplateJson($name){
-        $config = $this->disk->readJsonFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
-        $sections = [];
-        foreach($config['sections'] as $sectionId=>$data){
-            if(!in_array($sectionId, $config['order'])){
-                throw new LiquidException("Section id '{$sectionId}' must exist in order");
-            }else{ 
-                $data['id'] = $sectionId;
-                $sections[$sectionId] = $data;
-            }
-        }
-        foreach($config['order'] as $sectionId){
-            if(!isset($sections[$sectionId])){
-                throw new LiquidException("Section id '{$sectionId}' must exist in sections");
-            }
-        }
-
-        if(isset($config['layout'])){
-            $this->context->registers['layout'] = $config['layout'];
-        }
-        return $sections;
-    }
 
 
-    public function parseTemplateLiquid($name){
-        $node = $this->env->parseFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
-        return $node;
-    }
+    // public function parseTemplateJson($name){
+    //     $config = $this->disk->readJsonFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
+    //     $sections = [];
+    //     foreach($config['sections'] as $sectionId=>$data){
+    //         if(!in_array($sectionId, $config['order'])){
+    //             throw new LiquidException("Section id '{$sectionId}' must exist in order");
+    //         }else{ 
+    //             $data['id'] = $sectionId;
+    //             $sections[$sectionId] = $data;
+    //         }
+    //     }
+    //     foreach($config['order'] as $sectionId){
+    //         if(!isset($sections[$sectionId])){
+    //             throw new LiquidException("Section id '{$sectionId}' must exist in sections");
+    //         }
+    //     }
 
-    protected function getSectionSchema($name){
-        return $this->sections[$name]->options['schema']??[];
-    }
+    //     if(isset($config['layout'])){
+    //         $this->context->registers['layout'] = $config['layout'];
+    //     }
+    //     return $sections;
+    // }
 
-    protected function setctionToHeader(){
-        return '';
-    }
+
+    // public function parseTemplateLiquid($name){
+    //     $node = $this->env->parseFile(ShopifyFileSystem::PATH_TEMPLATE."/".$name);
+    //     return $node;
+    // }
+
+
 
     //渲染Template
-    public function renderTemplate($name){    
+    // public function renderTemplate($name){    
 
-        $this->context->registers['sections'] = [];
+    //     $this->context->registers['sections'] = [];
 
-        $data = $this->parseTemplate($name);
+    //     $data = $this->parseTemplate($name);
 
-        if($this->context->register['type'] == 'JSON'){
-            $content = $this->renderTemplateSections($data['settings']);
-        }else{
-            $content = $data->render($this->context);
-        }
+    //     if($this->context->register['type'] == 'JSON'){
+    //         $content = $this->renderTemplateSections($data['settings']);
+    //     }else{
+    //         $content = $data->render($this->context);
+    //     }
 
-        $layout = $this->context->registers['layout']??'theme';
-        if($layout){
-            $this->context->set('content_for_layout', new Drops\ContentForLayout($this->context, $content));
-            $content = $this->parseLayout($layout)->render($this->context);  
-        }else{
-            $content = (string)$content;
-        }
-        return str_replace('content_for_header', $this->setctionToHeader(), $content);
-    }
+    //     $layout = $this->context->registers['layout']??'theme';
+    //     if($layout){
+    //         $this->context->set('content_for_layout', new Drops\ContentForLayout($this->context, $content));
+    //         $content = $this->parseLayout($layout)->render($this->context);  
+    //     }else{
+    //         $content = (string)$content;
+    //     }
+    //     return str_replace('content_for_header', $this->setctionToHeader(), $content);
+    // }
 
     public function renderTemplateSections($sections){
         $contentForLayout = '';
@@ -278,24 +237,24 @@ class Theme{
     //     return ['content'=>$contentForLayout,'layout'=>$layout,'sections'=>$sections] ;
     // }
 
-    public function renderSection($name, $config = []){
+    // public function renderSection($name, $config = []){
 
 
-        $this->context->push();
-        $this->context->registers['in_section'] = $name;
-        $this->context->set('section', new \Drops\ThemeSectionDrop($this, $name, $config));
+    //     $this->context->push();
+    //     $this->context->registers['in_section'] = $name;
+    //     $this->context->set('section', new \Drops\ThemeSectionDrop($this, $name, $config));
 
-        $node = $this->parseSection($name);
-        if($node){
-            $content = $node->render($this->context);
-        }else{
-            $content = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
-        }
-        $this->context->pop(); 
-        unset($this->context->registers['in_section']);
+    //     $node = $this->parseSection($name);
+    //     if($node){
+    //         $content = $node->render($this->context);
+    //     }else{
+    //         $content = "Liquid error: Error in tag 'section' - {$name} is not a valid section type";
+    //     }
+    //     $this->context->pop(); 
+    //     unset($this->context->registers['in_section']);
 
-        return $content;
-    }
+    //     return $content;
+    // }
 
     /**
      * 先通过解析获取存在的sections
@@ -405,10 +364,7 @@ class Theme{
     //     return $content;
     // }
 
-    public function render($template, $assigns = []) {
-        $this->context->merge($assigns);
-        return $this->renderTemplate($template);
-    }
+
 
     public function getContext(){
         return $this->context;
