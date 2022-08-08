@@ -126,7 +126,11 @@ class Theme{
         return $content;
     }
 
-    public function render($template){
+    public function render($template, $data = []){
+
+        $data['settings'] = $this->drops['theme'];
+
+        $this->context->setCommont($data);
         
         $file = $this->cache->get(Theme::PATH_TEMPLATE, $template);
         if(!$file){
@@ -221,10 +225,6 @@ class Theme{
             }
         }
     }
-
- 
-
-
 
     public function getContext(){
         return $this->context;

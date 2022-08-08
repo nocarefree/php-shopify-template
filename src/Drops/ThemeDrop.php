@@ -12,12 +12,12 @@ class ThemeDrop extends \Liquid\Models\Drop{
     {
         $this->theme = $theme;
         $this->theme_info = array_shift($schema);
-        $this->attributes['settingsSchema'] = $schema;
+        $this->settingsSchema = $schema;
 
         $settings = array_merge($settings['presets']['Default']??[],$settings['current']??[]);
 
-        $this->attributes['sections'] = $settings['sections'];
-        $this->attributes['settings'] = $this->settingsToAttributes($settings);
+        $this->sections = $settings['sections'];
+        $this->attributes = $this->settingsToAttributes($settings);
     }
 
     private function settingsToAttributes($settings){
@@ -36,6 +36,17 @@ class ThemeDrop extends \Liquid\Models\Drop{
                 $_settings[$id] = $this->theme->getThemeDrop($types[$id]['type'], $setting);
             }
         }
-        return $settings;
+        return $_settings;
+    }
+
+    public function __toString()
+    {
+        $data = [];
+        foreach($this->attributes as $key=>$value){
+            if(!is_object($value)){
+                $data[$key] =$value;
+            }
+        }
+        return json_encode($data);
     }
 }
