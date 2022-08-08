@@ -161,19 +161,16 @@ class Theme{
 
         $layoutFile = $this->cache->get(Theme::PATH_LAYOUT, $layout);
 
-        if(empty($layoutFile)){
-            return $content;
+        if(!empty($layoutFile)){
+            $this->drops['content_for_layout'] = new Drops\ContentForLayout($this, $content);
+            $content = $layoutFile->render($this->context);
         }
 
         $header = $this->drops['content_for_header'];
-        $this->drops['content_for_layout'] = new Drops\ContentForLayout($this, $content);
-
-        $html = $layoutFile->render($this->context);
-
         if($header && $header instanceof Drops\ContentForHeader){
-            return str_replace((string)$header, $header->toHtml(), $layoutFile->render($this->context));
+            return str_replace((string)$header, $header->toHtml(), $content);
         }else{
-            return $html;
+            return $content;
         }
     }
 
