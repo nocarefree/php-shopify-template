@@ -23,7 +23,7 @@ class FilterAdditional{
         return 'Please enter a valid ' .implode(' ',$error['messages']);
     }
 
-    public function default_pagination($input ,$data = []){
+    public static function default_pagination($input ,$data = []){
         return '
         <span class="page current">1</span>
         <span class="page"><a href="/collections/all?page=2" title="">2</a></span>
@@ -34,7 +34,7 @@ class FilterAdditional{
         ';
     }
 
-    public function format_address($input , string $key, $value){
+    public static function format_address($input , string $key, $value){
         return '
             <p>
             Elizabeth Gonzalez<br>
@@ -47,13 +47,13 @@ class FilterAdditional{
         ';
     }
 
-    public function highlight($input , string $key){
+    public static function highlight($input , string $key){
         return str_replace($key, '<strong class="highlight">'.$key.'</strong>', $input);
     }
 
-    // public function t($input, $data = []){
-    //     return $this->app->translate($input, $data);
-    // }
+    public static function t($input, $data = []){
+        return \Ncf\ShopifyTemplate\ThemeLocale::translate($input, $data);
+    }
 
     public static function json($input){
         return $input?json_encode($input):'';

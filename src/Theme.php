@@ -2,7 +2,6 @@
 
 namespace Ncf\ShopifyTemplate;
 
-use Illuminate\Support\Arr;
 use Liquid\LiquidException;
 use Liquid\Context;
 
@@ -76,14 +75,11 @@ class Theme{
         }
     }
 
-    //设置语言
-    // public function setLocale($isCode){
-    //     $this->locale['s'] = $this->cache->get(Theme::PATH_LOCALE, $isoCode);
-    //     $extends = $this->disk->readJsonFile(Theme::PATH_LOCALE.'/'. $iso_code.'.schema');
-    
-    //     $this->context->registers['locale'] =  array_merge_recursive($default, $extends);
-    //     return $this;
-    // }
+    // 设置语言
+    public function setLocale($isoCode){
+        ThemeLocale::$data = $this->cache->get(Theme::PATH_LOCALE, $isoCode);
+        return $this;
+    }
 
     public function initDrops(){
         $schema = $this->cache->get(Theme::PATH_CONFIG,'settings_schema_data');
@@ -177,18 +173,6 @@ class Theme{
             return $content;
         }
     }
-
-    //翻译
-    public function translate($input, $data = []){
-        $content = Arr::get($this->context->registers['locale'], $input);
-        if(is_array($data)){
-            foreach($data as $key=>$value){
-                $content = preg_replace("/{{\s*".preg_quote($key,'/')."\s*}}/", $value, $content);
-            } 
-        }
-        return $content;
-    }
-
 
     public function renderTemplateSections($sections){
         $contentForLayout = '';
