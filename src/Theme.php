@@ -3,7 +3,7 @@
 namespace Ncf\ShopifyTemplate;
 
 use Liquid\LiquidException;
-use Liquid\Context;
+use Illuminate\Support\Arr;
 
 class Theme{
 
@@ -30,31 +30,61 @@ class Theme{
         'url' => 'string',
         'video_url' => 'string',
 
-        'article' => ArticleDrop::class,
-        'blog' => BlogDrop::class,
-        'collection' => CollectionDrop::class,
-        'collection_list' => CollectionListDrop::class,
-        'color' => ColorDrop::class,
-        'font_picker' => FontDrop::class,
-        'image_picker' => ImageDrop::class,
-        'link_list' => LinkListDrop::class, 
-        'liquid' => LiquidDrop::class,
-        'page' => PageDrop::class,
-        'product' => ProductDrop::class,
-        'product_list' => ProductListDrop::class,
+        
+        'color' => Drops\ColorDrop::class,
+        'font_picker' => Drops\FontDrop::class,
+        'image_picker' => Drops\ImageDrop::class,
+        'link_list' => Drops\LinkListDrop::class, 
+        'liquid' => Drops\LiquidDrop::class,
     ];
 
-    public $drops = '';
+
+    protected $drops = [];
+
+    protected $locale;
 
 
-    public function __construct(ThemeCache $cache, $isoCode = 'en.default')
+    public function __construct(ThemeCache $cache)
     {
         $this->cache = $cache;
-        $this->locale = $isoCode;
+        $this->drops = [];
         $this->context = new Context(); //创建数据流
 
         $this->initDrops();
 
+    }
+
+    public function setIntputDrop($key, $value = null){
+        if(!is_array($key)){
+            $t = [$key=>$value];
+        }else{
+            $t = $key;
+        }
+
+        foreach($t as $k=>$v){
+            $this->inputSettings[$k] = $v;
+        }
+        return $this;
+    }
+
+    // 设置语言
+    public function setLocale($isoCode){
+        $this->locale = $this->cache->get(Theme::PATH_LOCALE, $isoCode);
+
+        $this->context->setFilters(['t'=> function($input, $data = []){
+            return $this->translate($input);
+        }]);
+        return $this;
+    }
+
+    public function translate($input, $data = []){
+        $content = Arr::get($this->locale['node'], $input);
+        if(is_array($data)){
+            foreach($data as $key=>$value){
+                $content = preg_replace("/{{\s*".preg_quote($key,'/')."\s*}}/", $value, $content);
+            } 
+        }
+        return $content;
     }
 
     public function getThemeDrop($name, $args = null){
@@ -75,24 +105,20 @@ class Theme{
         }
     }
 
-    // 设置语言
-    public function setLocale($isoCode){
-        ThemeLocale::$data = $this->cache->get(Theme::PATH_LOCALE, $isoCode);
-        return $this;
-    }
-
     public function initDrops(){
-        $schema = $this->cache->get(Theme::PATH_CONFIG,'settings_schema_data');
-        $settings = $this->cache->get(Theme::PATH_CONFIG,'settings_data');
+        $schemaFile = $this->cache->get(Theme::PATH_CONFIG,'settings_schema');
+        $settingsFile = $this->cache->get(Theme::PATH_CONFIG,'settings_data');
 
-        $this->drops['sections'] =  new Drops\SectionsDrop(array_filter($this->files, function($file){
-            return $file['path'] == Theme::PATH_SECTION && $file['node'];
+
+        $this->drops['sections'] =  new Drops\SectionsDrop( $this->cache->getFiles(function($file){
+            return $file && $file['path'] == Theme::PATH_SECTION && $file['node'];
         }));
 
-        $this->drops['theme'] = new Drops\ThemeDrop($this, $schema, $settings);
+        $this->drops['theme'] = new Drops\ThemeDrop($this, $schemaFile['node'], $settingsFile['node']);
         $this->drops['content_for_header'] = new Drops\ContentForHeader();
         $this->drops['content_for_layout'] = new Drops\ContentForLayout($this->context);
         $this->drops['families'] = new Drops\FontFamiliesDrop(); 
+
     }
 
     public function getDrop($name): \Liquid\Models\Drop{
@@ -126,11 +152,11 @@ class Theme{
 
         $data['settings'] = $this->drops['theme'];
 
-        $this->context->setCommont($data);
+        $this->context->setCommon($data);
         
         $file = $this->cache->get(Theme::PATH_TEMPLATE, $template);
         if(!$file){
-            throw new \Liquid\FileNoFound( Theme::PATH_TEMPLATE.'/', $template );
+            throw new \Liquid\FileNoFound( Theme::PATH_TEMPLATE.'/' .  $template );
         }
 
         $content = '';

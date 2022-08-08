@@ -6,7 +6,7 @@ use Ncf\ShopifyTemplate\Nodes\SectionAttributeNode;
 
 class SectionsDrop extends \Liquid\Models\Drop{
     
-    function __construct($files)
+    function __construct(array $files = [])
     {
         foreach($files as $file){
             if($file['node']){

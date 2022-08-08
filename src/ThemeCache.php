@@ -14,8 +14,8 @@ class ThemeCache{
         $this->files = $server->getFiles();
     }
 
-    public function getFiles(){
-        return $this->files;
+    public function getFiles($filter = null){
+        return is_callable($filter) ? array_filter($this->files, $filter) : $this->files;
     }
 
     public function getTheme(){

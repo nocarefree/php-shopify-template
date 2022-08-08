@@ -134,7 +134,7 @@ class ThemeInstall{
             }
             return null;
         }
-        return true;
+        return null;
     }
 
     protected function getLocale($file){
@@ -173,6 +173,7 @@ class ThemeInstall{
         $this->files = [];
 
         $files = $this->disk->getAllFiles('',3);
+
         $checkFunctions = ['layout','section','template','snippet','config','locale','asset'];
 
         foreach($files as $key=>$file){

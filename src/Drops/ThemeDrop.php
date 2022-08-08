@@ -3,13 +3,12 @@
 namespace Ncf\ShopifyTemplate\Drops;
 
 
-use Ncf\ShopifyTemplate\Theme;
-
 class ThemeDrop extends \Liquid\Models\Drop{
 
     
-    function __construct($theme, $schema, $settings)
+    function __construct($theme, $schema = [], $settings = [])
     {
+
         $this->theme = $theme;
         $this->theme_info = array_shift($schema);
         $this->settingsSchema = $schema;
@@ -17,6 +16,7 @@ class ThemeDrop extends \Liquid\Models\Drop{
         $settings = array_merge($settings['presets']['Default']??[],$settings['current']??[]);
 
         $this->sections = $settings['sections'];
+        unset($settings['sections']);
         $this->attributes = $this->settingsToAttributes($settings);
     }
 
@@ -24,7 +24,7 @@ class ThemeDrop extends \Liquid\Models\Drop{
         $types = [];
         foreach($this->settingsSchema as $group){
             foreach($group['settings'] as $row){
-                if($row['id']){
+                if(isset($row['id'])){
                     $types[$row['id']] = $row['type'];
                 }
             }
@@ -33,7 +33,7 @@ class ThemeDrop extends \Liquid\Models\Drop{
         $_settings = [];
         foreach($settings as $id=>$setting){
             if(isset($types[$id])){
-                $_settings[$id] = $this->theme->getThemeDrop($types[$id]['type'], $setting);
+                $_settings[$id] = $this->theme->getThemeDrop($types[$id], $setting);
             }
         }
         return $_settings;

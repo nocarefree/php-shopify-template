@@ -51,10 +51,6 @@ class FilterAdditional{
         return str_replace($key, '<strong class="highlight">'.$key.'</strong>', $input);
     }
 
-    public static function t($input, $data = []){
-        return \Ncf\ShopifyTemplate\ThemeLocale::translate($input, $data);
-    }
-
     public static function json($input){
         return $input?json_encode($input):'';
     }

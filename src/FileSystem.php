@@ -45,7 +45,7 @@ class FileSystem implements Im
 		return $files;
 	}
 
-    public function get($path, $type = '') {
+    public function get($path) :string {
         $fullpath = $this->root . '/'. $path ;
 		if (!file_exists($fullpath) ) {
 			$this->throw("Illegal template path '{$path}'");
