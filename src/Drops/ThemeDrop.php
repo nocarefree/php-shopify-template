@@ -8,32 +8,19 @@ use Ncf\ShopifyTemplate\Theme;
 class ThemeDrop extends \Liquid\Models\Drop{
 
     
-    function __construct($cache)
+    function __construct($theme, $schema, $settings)
     {
-        
-        $schema = $this->cache->get(Theme::PATH_CONFIG,'settings_schema_data');
-        $settings = $this->cache->get(Theme::PATH_CONFIG,'settings_data');
-
-
-        $this->theme = array_shift($schema);
-        $this->settingsSchema = $schema;
+        $this->theme = $theme;
+        $this->theme_info = array_shift($schema);
+        $this->attributes['settingsSchema'] = $schema;
 
         $settings = array_merge($settings['presets']['Default']??[],$settings['current']??[]);
 
-        $this->sections = $settings['sections'];
-        $settings(['sections']);
-        $this->settings = $settings;
-
-        $this->settingsToAttributes();
+        $this->attributes['sections'] = $settings['sections'];
+        $this->attributes['settings'] = $this->settingsToAttributes($settings);
     }
 
-
-    function settingInit($id, $setting){
-        
-        return $setting;
-    }
-
-    private function settingsToAttributes(){
+    private function settingsToAttributes($settings){
         $types = [];
         foreach($this->settingsSchema as $group){
             foreach($group['settings'] as $row){
@@ -42,11 +29,13 @@ class ThemeDrop extends \Liquid\Models\Drop{
                 }
             }
         }
-
-        foreach($this->settings as $id=>$setting){
+        
+        $_settings = [];
+        foreach($settings as $id=>$setting){
             if(isset($types[$id])){
-                $this->attributes[$id] = 
+                $_settings[$id] = $this->theme->getThemeDrop($types[$id]['type'], $setting);
             }
         }
+        return $settings;
     }
 }
