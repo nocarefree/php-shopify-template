@@ -15,11 +15,11 @@ class SectionEnv extends BaseEnv{
     public static function getInnerTags(){
         return [
             //Config
-            'schema'=> Tags\TagSchema::class,
+            'schema'=> \Ncf\ShopifyTemplate\Tags\TagSchema::class,
             
             //section template
-            'javascript'=> Tags\TagJavascript::class,
-            'stylesheet'=> Tags\TagStylesheet::class,
+            'javascript'=> \Ncf\ShopifyTemplate\Tags\TagJavascript::class,
+            'stylesheet'=> \Ncf\ShopifyTemplate\Tags\TagStylesheet::class,
         ];
     }
 

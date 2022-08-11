@@ -3,19 +3,21 @@
 namespace Ncf\ShopifyTemplate\Drops;
 
 class ContentForLayout extends \Liquid\Models\Drop{
-    function __construct($context)
+    function __construct($content, $context)
     {
+        $this->content = $content;
         $this->context = $context;
-    }
 
-    function setSections($sections){
-        $this->sections = $sections;
+        $this->sections = $this->context->registers['sections']??[];
+        $this->context->registers['sections'] = [];
     }
 
     function __toString(){
-        foreach($this->sections as $section){
-            $this->context->registers['sections'][] = $section;
-        }
-        return  '<!-- BEGIN template -->' .$this->content .'<!-- END template -->';
+        return  '<!-- BEGIN template -->' .$this->toHtml() .'<!-- END template -->';
+    }
+
+    function toHtml(){
+        $this->context->registers['sections'] = array_merge($this->context->registers['sections'], $this->sections);
+        return  $this->content;
     }
 }

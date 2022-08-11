@@ -1,5 +1,4 @@
-{
-    "font_families": [
+ [
         {
             "default_variant_handle": "mono",
             "name": "Mono",
@@ -32921,11 +32920,4 @@
                 }
             ]
         }
-    ],
-    "metadata": {
-        "env": "production",
-        "generated_on": "2022-05-02T20:37:20Z",
-        "host": "shopify.dev",
-        "version": "fd5b95695bf4691e07cd55c35665958ed67edfd0"
-    }
-}
+    ]

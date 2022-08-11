@@ -20,7 +20,7 @@ class TagStyle extends Block
 {
 
 	public function render(Context $context){
-		return "<style>" . parent::render($context) . "<style>";
+		return "<style>" . parent::render($context) . "</style>";
 	}
 
 }

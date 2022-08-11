@@ -8,7 +8,7 @@ namespace Ncf\ShopifyTemplate\Filters;
 class FilterUrl{
 
     public static function asset_url ($input){
-        return 'assets/' . $input;
+        return '/s/files/123/t1/assets/' . $input;
     }
 
     public static function asset_img_url($input, $key = null){

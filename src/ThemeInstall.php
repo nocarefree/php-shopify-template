@@ -12,8 +12,8 @@ class ThemeInstall{
         $this->disk = new FileSystem($path); 
 
         $this->env = new Envs\BaseEnv;
-        $this->sectionEnv = new Envs\sectionEnv;
-        $this->layoutEnv = new Envs\layoutEnv;
+        $this->sectionEnv = new Envs\SectionEnv;
+        $this->layoutEnv = new Envs\LayoutEnv;
 
         $this->env->debug = true;
         $this->sectionEnv->debug = true;
@@ -41,7 +41,7 @@ class ThemeInstall{
                     'node' => $this->layoutEnv->parse($content),
                 ];
                 return true;
-            }catch(LiquidException $e){
+            }catch(LiquidException $e){ 
                 return null;
             }
         }

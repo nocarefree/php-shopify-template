@@ -5,10 +5,36 @@ namespace Ncf\ShopifyTemplate\Drops;
 class FontDrop extends \Liquid\Models\Drop{
     public $allowModifies = [
         'style' => ['normal', 'italic', 'oblique'],
-        'weight' => ['normal', 'bold', 'lighter','bolder','200','300','400','500','800','900'],
+        'weight' => ['normal', 'bold', 'lighter','bolder'],
         'display' => ['auto', 'block', 'swap', 'fallback',  'optional'],
         'url' => ['woff','woff2']
     ];
+
+    static $families = null;
+
+    function __construct($handle)
+    {
+        $this->attributes = static::getFont($handle);   
+    }
+
+    static function getFont($handle){
+        if(static::$families === null){
+            $data = json_decode(file_get_contents(__DIR__.'/../../assets/json/shopify_font_families.json'),true);
+            $list = [];
+            foreach($data as $family){
+                foreach($family['variants'] as $font){
+                    $list[$font['handle']] = $font;   
+                }
+            }
+            static::$families = $list;
+        }
+
+        if(!isset(static::$families[$handle])){
+            throw new \Liquid\LiquidException("'{$handle}' is not a valid font handle");
+        }else{
+            return static::$families[$handle];
+        }
+    }
     
     function modify($key, $value){
 
@@ -27,22 +53,27 @@ class FontDrop extends \Liquid\Models\Drop{
     }
 
     function weight($value){
-        $weight = "";
+        $weight = $this->weight;
         if(in_array($value,$this->allowModifies['weight'])){
             $weight = $value;
-        }else if(strpos($value,'+') === 0 && is_numeric($num = substr($value,1))){
-            $num += 400;
-            if(!in_array($num,$this->allowModifies['weight'])){
-                $weight = $num; 
-            }
+            $weight = $weight == 'normal' ? 400: ($weight == 'bold'?700: $weight);
+            return $this->setAttribute('weight', $weight);
         }
-        return $this->setAttribute('weight', $weight);
+        
+        $weight = is_numeric($weight)? $weight : ($weight == 'bold' ? 700 : 400);
+        if(strpos($value,'+') === 0 && is_numeric($num = substr($value,1))){
+            if( ceil($num/100*100) == (int)$num ){
+                $weight += $num; 
+            }
+            return $this->setAttribute('weight', $weight);
+        }
+        return 400;
     }
 
 
     function url($key){
         if(in_array($key,$this->allowModifies['url'])){
-            return $this->{'url'.$key};
+            return $this->urls[$key];
         }else{
             return 'Liquid error: font_url only supports the woff2 and woff formats';
         }

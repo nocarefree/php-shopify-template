@@ -16,8 +16,10 @@ use \Liquid\Context as BaseContext;
 class Context extends BaseContext
 {
 
-	public function __construct($assigns = [], $common = [],$registers = []) {
-		parent::__construct($assigns, $common, $registers);
+	public function __construct(Theme $theme) {
+        $this->theme = $theme;
+
+		parent::__construct();
 
         foreach([
             Filters\FilterArray::class,
@@ -34,6 +36,16 @@ class Context extends BaseContext
             $this->registerFilterClass($filter);
         }
 	}
+
+    public function theme(){
+        return $this->theme;
+    }
+
+
+    public function renderSection($config = []){
+        return $this->theme->renderSection($config);
+    }
+
 
 
 

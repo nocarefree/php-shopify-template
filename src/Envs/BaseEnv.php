@@ -12,16 +12,16 @@ class BaseEnv extends Environment{
 
         $this->registerTags([
             //Template
-            'render'=> Tags\TagRender::class,
-            'layout'=> Tags\TagLayout::class,
-            'section'=> Tags\TagSection::class,
+            'render'=> \Ncf\ShopifyTemplate\Tags\TagRender::class,
+            'layout'=> \Ncf\ShopifyTemplate\Tags\TagLayout::class,
+            'section'=> \Ncf\ShopifyTemplate\Tags\TagSection::class,
     
             //Iteration
-            'paginate'=> Tags\TagPaginate::class,
+            'paginate'=> \Ncf\ShopifyTemplate\Tags\TagPaginate::class,
     
             //Html
-            'form'=> Tags\TagForm::class,
-            'style'=> Tags\TagStyle::class,
+            'form'=> \Ncf\ShopifyTemplate\Tags\TagForm::class,
+            'style'=> \Ncf\ShopifyTemplate\Tags\TagStyle::class,
         ]);
     }
 

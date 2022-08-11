@@ -48,10 +48,15 @@ class Theme{
     {
         $this->cache = $cache;
         $this->drops = [];
-        $this->context = new Context(); //创建数据流
+        $this->context = new Context($this); //创建数据流
+        $this->translate = new Translate($this);
 
         $this->initDrops();
 
+    }
+
+    public function cache(){
+        return $this->cache;
     }
 
     public function setIntputDrop($key, $value = null){
@@ -69,22 +74,12 @@ class Theme{
 
     // 设置语言
     public function setLocale($isoCode){
-        $this->locale = $this->cache->get(Theme::PATH_LOCALE, $isoCode);
+        $this->translate->set($isoCode);
 
         $this->context->setFilters(['t'=> function($input, $data = []){
-            return $this->translate($input);
+            return $this->translate->get($input, $data);
         }]);
         return $this;
-    }
-
-    public function translate($input, $data = []){
-        $content = Arr::get($this->locale['node'], $input);
-        if(is_array($data)){
-            foreach($data as $key=>$value){
-                $content = preg_replace("/{{\s*".preg_quote($key,'/')."\s*}}/", $value, $content);
-            } 
-        }
-        return $content;
     }
 
     public function getThemeDrop($name, $args = null){
@@ -98,7 +93,7 @@ class Theme{
                 case 'bool':
                     return boolval($args);
                 default:
-                    return new $type($name);
+                    return new $type($args);
             }
         }else{
             throw new LiquidException('"'.$name.'" type is invalid');
@@ -115,8 +110,6 @@ class Theme{
         }));
 
         $this->drops['theme'] = new Drops\ThemeDrop($this, $schemaFile['node'], $settingsFile['node']);
-        $this->drops['content_for_header'] = new Drops\ContentForHeader();
-        $this->drops['content_for_layout'] = new Drops\ContentForLayout($this->context);
         $this->drops['families'] = new Drops\FontFamiliesDrop(); 
 
     }
@@ -129,19 +122,25 @@ class Theme{
 
         $sectionFile = $this->cache->get(Theme::PATH_SECTION, $config['type']);
         if(empty($sectionFile)){
-            return "Liquid error: Error in tag 'section' - ".$config['type']." is not a valid section type";
+            return "Liquid error: Error in tag 'section' - '".$config['type']."' is not a valid section type";
         }
 
 
         $this->context->push();
         $this->context->registers['in_section'] = $config['type'];
 
+        
 
-        $config['settings'] = $config['settings'] ?? $this->getDrop('theme')->sections[$config['id']];
-        $schema = $this->getDrop('sections')->schema[$config['type']];
+        $config['settings'] = $config['settings'] ?? ( $this->getDrop('theme')->sections[$config['type']]  ?? [] );
 
-        $this->context->set('section', new Drops\ThemeSectionDrop($this, $schema, $config));
+        $schema = $this->getDrop('sections')->schema[$config['type']] ?? [];
+
+        $sectionDrop = new Drops\ThemeSectionDrop($this, $schema, $config);
+        $this->context->set('section', $sectionDrop);
+        $this->context->registers['sections'][] = $sectionDrop;
+
         $content = $sectionFile['node']->render($this->context);
+
         $this->context->pop(); 
         unset($this->context->registers['in_section']);
 
@@ -150,9 +149,12 @@ class Theme{
 
     public function render($template, $data = []){
 
+        $header = new Drops\ContentForHeader();
+        $data['content_for_header'] = $header;
         $data['settings'] = $this->drops['theme'];
 
         $this->context->setCommon($data);
+        $this->context->registers['sections'] = [];
         
         $file = $this->cache->get(Theme::PATH_TEMPLATE, $template);
         if(!$file){
@@ -161,20 +163,18 @@ class Theme{
 
         $content = '';
         $node = $file['node'];
-        $layout = 'theme';
+        
         if($file['type'] == 'JSON'){
+            $layout = 'theme';
             foreach($node['order'] as $sectionId){
                 if(isset($node['sections'][$sectionId])){
                     $section = $node['sections'][$sectionId];
-                    $sectionFile = $this->cache->get(Theme::PATH_SECTION, $section['type']);
+                    $section['id'] = $sectionId;
                     
-                    if(empty($sectionFile)){
-                        $content .= "Liquid error: Error in tag 'section' - '".$section['type']."' is not a valid section type";
-                    }else{
-                        $content .= $sectionFile['node']->render($this->context);
-                    }
+                    $content .= $this->renderSection($section);
                 }
             }
+
             if(isset($node['layout'])){
                 $layout = $node['layout'];
             }
@@ -185,19 +185,17 @@ class Theme{
             }
         }
 
+        $contentDrop = new Drops\ContentForLayout($content, $this->context);
+        $this->context->set('content_for_layout', $contentDrop);
+
         $layoutFile = $this->cache->get(Theme::PATH_LAYOUT, $layout);
-
         if(!empty($layoutFile)){
-            $this->drops['content_for_layout'] = new Drops\ContentForLayout($this, $content);
-            $content = $layoutFile->render($this->context);
+            $content = $layoutFile['node']->render($this->context);
+        }else{
+            $content = $contentDrop->toHtml();
         }
 
-        $header = $this->drops['content_for_header'];
-        if($header && $header instanceof Drops\ContentForHeader){
-            return str_replace((string)$header, $header->toHtml(), $content);
-        }else{
-            return $content;
-        }
+        return str_replace((string)$header, $header->toHtml(), $content);
     }
 
     public function renderTemplateSections($sections){

@@ -32,8 +32,9 @@ class FilterHtml{
         return null;
     }
 
-    public static function stylesheet_tag($input){
-        return '<link href="'.$input.'" rel="stylesheet" type="text/css" media="all" />';
+    public static function stylesheet_tag($input, $data = []){
+        $media = $data['media'] ?? 'all';
+        return '<link href="'.$input.'" rel="stylesheet" type="text/css" media="'.$media.'" />';
     }
     
     public static function time_tag($input){

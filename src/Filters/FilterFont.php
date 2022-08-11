@@ -17,7 +17,7 @@ class FilterFont{
         return $input->toHtml($key);
     }
 
-    public static function font_url(FontDrop $input, $key = null){
+    public static function font_url(FontDrop $input, $key = 'woff2'){
         return $input->url($key);
     }
 
