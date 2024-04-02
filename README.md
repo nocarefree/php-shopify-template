@@ -1,1 +1,1 @@
-# php-shopify-liquid
+# php-shopify-template

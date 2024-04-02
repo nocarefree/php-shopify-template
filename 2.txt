@@ -8,10 +8,6 @@
     <link rel="canonical" href="http://store.com">
     <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
 
-    
-
-    
-
     <title>
       
       &ndash; tagged ""

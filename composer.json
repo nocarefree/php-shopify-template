@@ -1,12 +1,16 @@
 {
-    "name": "nocarefree/php-shopify-liquid",
+    "name": "nocarefree/php-shopify-template",
     "description": "Shopify Liquid template engine for php",
     "keywords": ["php","liquid", "template","shopify"],
     "license": "MIT",
 	"type": "library",
     "autoload": {
         "psr-4": {
+<<<<<<< HEAD
             "ShopifyLiquid\\": "src/"
+=======
+            "Ncf\\ShopifyTemplate\\": "src/"
+>>>>>>> 7cd1322d617f0c921f627129d76e9edb3559ccfe
         }
     },
     "authors": [
@@ -19,7 +23,6 @@
         "php": ">= 7.0",
         "illuminate/support": "^9.13",
         "nocarefree/php-liquid": "dev-master",
-        "illuminate/config": "^9.14",
-        "twig/twig": "^3.4"
+        "illuminate/config": "^9.14"
     }
 }
