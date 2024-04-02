@@ -9,7 +9,7 @@
  * @package Liquid
  */
 
-namespace Ncf\ShopifyLiquid\Tags;
+namespace ShopifyLiquid\Tags;
 
 use Liquid\Tags\TagRender;
 use Liquid\Context;
@@ -17,10 +17,11 @@ use Ncf\ShopifyLiquid\ShopifyTemplate;
 
 class TagSection extends TagRender
 {
-	
-	function parse(){
+
+	function parse()
+	{
 		parent::parse();
-		$this->options['file']['path'] = ShopifyTemplate::PATH_SECTION ;
+		$this->options['file']['path'] = ShopifyTemplate::PATH_SECTION;
 	}
 
 	/**
@@ -30,22 +31,23 @@ class TagSection extends TagRender
 	 *
 	 * @return string
 	 */
-	public function render(Context $context) {
-		if(isset($context->registers['in_section']) && $context->registers['in_section']){
+	public function render(Context $context)
+	{
+		if (isset($context->registers['in_section']) && $context->registers['in_section']) {
 			return '';
 		}
 
 		$name = $context->get($this->options['file']['name']);
 
 		$this->options['parameters'] = [
-			'section'=>'settings.sections.'. $name,
+			'section' => 'settings.sections.' . $name,
 		];
 
 		$result = parent::render($context);
 
 		$context->registers['headers'][$name] = [
-			'stylesheet' => $context->registers['stylesheet']??'',
-			'javascript' => $context->registers['javascript']??'' 
+			'stylesheet' => $context->registers['stylesheet'] ?? '',
+			'javascript' => $context->registers['javascript'] ?? ''
 		];
 
 		unset($context->registers['stylesheet']);

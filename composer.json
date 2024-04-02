@@ -6,7 +6,7 @@
 	"type": "library",
     "autoload": {
         "psr-4": {
-            "Ncf\\ShopifyLiquid\\": "src/"
+            "ShopifyLiquid\\": "src/"
         }
     },
     "authors": [

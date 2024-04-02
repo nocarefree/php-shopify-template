@@ -9,7 +9,7 @@
  * @package Liquid
  */
 
-namespace Ncf\ShopifyLiquid\Tags;   
+namespace ShopifyLiquid\Tags;
 
 use Liquid\Nodes\Block;
 use Liquid\Context;
@@ -45,14 +45,15 @@ use Liquid\Parser;
  */
 class TagForm extends Block
 {
-	public function parse(){
+	public function parse()
+	{
 
-		if(preg_match(Parser::REGEX_STRING, $this->options['expression'], $matches)){
+		if (preg_match(Parser::REGEX_STRING, $this->options['expression'], $matches)) {
 			$this->options['form_name'] =  $matches[0];
 			$index = strlen($this->options['form_name']);
 
 			$this->opitons['args'] = [];
-			if(preg_match('/\G\s?,/', $this->options['expression'], $matches,0 ,$index)){
+			if (preg_match('/\G\s?,/', $this->options['expression'], $matches, 0, $index)) {
 				$index += strlen($matches[0]);
 				$this->opitons['args'] = Parser::parseParameters($this->options['expression']);
 			}
@@ -61,8 +62,8 @@ class TagForm extends Block
 		parent::parse();
 	}
 
-	public function render(Context $context) {
-        return '<form>'. parent::render($context) . '</form>';
+	public function render(Context $context)
+	{
+		return '<form>' . parent::render($context) . '</form>';
 	}
-
 }

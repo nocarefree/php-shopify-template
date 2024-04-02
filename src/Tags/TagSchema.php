@@ -9,7 +9,7 @@
  * @package Liquid
  */
 
-namespace Ncf\ShopifyLiquid\Tags;
+namespace ShopifyLiquid\Tags;
 
 use Liquid\Nodes\Block;
 use Liquid\Context;
@@ -17,7 +17,8 @@ use Liquid\Context;
 
 class TagSchema extends Block
 {
-    public function render(Context $context){
+    public function render(Context $context)
+    {
         return '';
     }
 }

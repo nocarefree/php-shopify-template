@@ -9,14 +9,15 @@
  * @package Liquid
  */
 
-namespace Ncf\ShopifyLiquid\Tags;
+namespace ShopifyLiquid\Tags;
 
 use Ncf\ShopifyLiquid\ShopifyTemplate;
 
 
 class TagRender extends \Liquid\Tags\TagRender
 {
-	function parse(){
+	function parse()
+	{
 		parent::parse();
 		$this->options['file']['path'] = ShopifyTemplate::PATH_SNIPPET;
 	}

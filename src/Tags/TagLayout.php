@@ -2,7 +2,7 @@
 
 
 
-namespace Ncf\ShopifyLiquid\Tags;
+namespace ShopifyLiquid\Tags;
 
 use Liquid\Nodes\Node;
 use Liquid\Context;
@@ -15,9 +15,9 @@ use Liquid\Context;
  */
 class TagLayout extends Node
 {
-    public function render(Context $context){
+    public function render(Context $context)
+    {
         $context->registers['layout'] = $this->options['expression'];
         return '';
     }
-
 }

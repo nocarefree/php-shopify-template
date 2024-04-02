@@ -2,7 +2,7 @@
 
 
 
-namespace Ncf\ShopifyLiquid\Tags;
+namespace ShopifyLiquid\Tags;
 
 use Liquid\Nodes\Block;
 use Liquid\Context;
@@ -16,9 +16,9 @@ use Liquid\Context;
 class TagJavascript extends Block
 {
 
-    public function render(Context $context){
-        $context->registers['javascript'] = parent::render($context) ;
+    public function render(Context $context)
+    {
+        $context->registers['javascript'] = parent::render($context);
         return '';
     }
-    
 }

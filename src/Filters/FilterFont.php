@@ -1,35 +1,37 @@
-<?php 
+<?php
 
-namespace Ncf\ShopifyLiquid\Filters;
+namespace ShopifyLiquid\Filters;
 
 
 // https://shopify.dev/api/liquid/filters/font-filters
 
-class FilterFont{
+class FilterFont
+{
 
 
-    public static function font_modify($input , $key, $value){
-        if($key == 'style'){
-            if(in_array($value, ['normal', 'italic', 'oblique'])){
+    public static function font_modify($input, $key, $value)
+    {
+        if ($key == 'style') {
+            if (in_array($value, ['normal', 'italic', 'oblique'])) {
                 $input['style'] = $value;
             }
         }
 
-        if($key == 'weight'){
-            if(in_array($value, ['normal', 'bold', 'lighter','bolder'])){
+        if ($key == 'weight') {
+            if (in_array($value, ['normal', 'bold', 'lighter', 'bolder'])) {
                 $input['weight'] = $value;
             }
         }
         return $input;
     }
 
-    public static function font_face($input , $key = null){
+    public static function font_face($input, $key = null)
+    {
         return null;
     }
 
-    public static function font_url($input, $key = null){
+    public static function font_url($input, $key = null)
+    {
         return $input;
     }
-
-
 }

@@ -1,34 +1,39 @@
-<?php 
+<?php
 
-namespace Ncf\ShopifyLiquid\Filters;
+namespace ShopifyLiquid\Filters;
 
 use Liquid\LiquidException;
 use Illuminate\Support\Arr;
 
 //  https://shopify.dev/api/liquid/filters/array-filters
 
-class FilterAdditional{
+class FilterAdditional
+{
 
-    public function __construct($template){
+    public function __construct($template)
+    {
         $this->app = $template;
     }
 
-    public static function default($input , $value = ''){
-        if(is_array($value)){
-            if(isset($value['allow_false']) && $value['allow_false'] = true){
+    public static function default($input, $value = '')
+    {
+        if (is_array($value)) {
+            if (isset($value['allow_false']) && $value['allow_false'] = true) {
                 $value = $input == false ? false : $value[0];
-            }else{
+            } else {
                 $value = $value[0];
             }
         }
         return $input ? $input : $value;
     }
 
-    public function default_errors(array $error ,$array){
-        return 'Please enter a valid ' .implode(' ',$error['messages']);
+    public function default_errors(array $error, $array)
+    {
+        return 'Please enter a valid ' . implode(' ', $error['messages']);
     }
 
-    public function default_pagination($input ,$data = []){
+    public function default_pagination($input, $data = [])
+    {
         return '
         <span class="page current">1</span>
         <span class="page"><a href="/collections/all?page=2" title="">2</a></span>
@@ -39,7 +44,8 @@ class FilterAdditional{
         ';
     }
 
-    public function format_address($input , string $key, $value){
+    public function format_address($input, string $key, $value)
+    {
         return '
             <p>
             Elizabeth Gonzalez<br>
@@ -52,26 +58,30 @@ class FilterAdditional{
         ';
     }
 
-    public function highlight($input , string $key){
-        return str_replace($key, '<strong class="highlight">'.$key.'</strong>', $input);
+    public function highlight($input, string $key)
+    {
+        return str_replace($key, '<strong class="highlight">' . $key . '</strong>', $input);
     }
 
-    public function t($input, $data = []){
+    public function t($input, $data = [])
+    {
         $content = Arr::get($this->app->getLocale(), $input);
-        
-        if(is_array($data)){
-            foreach($data as $key=>$value){
-                $content = preg_replace("/{{\s*".preg_quote($key,'/')."\s*}}/", $value, $content);
-            } 
+
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $content = preg_replace("/{{\s*" . preg_quote($key, '/') . "\s*}}/", $value, $content);
+            }
         }
         return $content;
     }
 
-    public function json($input){
-        return $input?json_encode($input):'';
+    public function json($input)
+    {
+        return $input ? json_encode($input) : '';
     }
 
-    public function placeholder_svg_tag($input, $class){
+    public function placeholder_svg_tag($input, $class)
+    {
         $allowSvgs = [
             'collection-1',
             'collection-2',
@@ -90,16 +100,14 @@ class FilterAdditional{
             'product-6',
         ];
 
-        if(!in_array($input,$allowSvgs)){
-           return "Unknown SVG placeholder 'collection-7'";
+        if (!in_array($input, $allowSvgs)) {
+            return "Unknown SVG placeholder 'collection-7'";
         }
 
-        $content = file_get_contents(dirname(dirname(__DIR__)).'/icons/'.$input.'.svg');
-        if(is_string($class)){
-            $content = str_replace('<svg','<svg class="'.$class.'"', $content);
+        $content = file_get_contents(dirname(dirname(__DIR__)) . '/icons/' . $input . '.svg');
+        if (is_string($class)) {
+            $content = str_replace('<svg', '<svg class="' . $class . '"', $content);
         }
         return $content;
     }
-
-
 }
