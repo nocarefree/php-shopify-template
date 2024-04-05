@@ -1,10 +1,9 @@
 <?php
 
-namespace Ncf\ShopifyTemplate\Nodes;
+namespace ShopifyTemplate\Nodes;
 
 use Liquid\Environment;
 
-class Variable extends \Liquid\Nodes\Variable{
-
-
+class Variable extends \Liquid\Nodes\Variable
+{
 }

@@ -1,10 +1,6 @@
 <?php
 
-<<<<<<< HEAD
 namespace ShopifyLiquid\Filters;
-=======
-namespace Ncf\ShopifyTemplate\Filters;
->>>>>>> 7cd1322d617f0c921f627129d76e9edb3559ccfe
 
 
 // https://shopify.dev/api/liquid/filters/html-filters
@@ -12,14 +8,9 @@ namespace Ncf\ShopifyTemplate\Filters;
 class FilterUrl
 {
 
-<<<<<<< HEAD
     public static function asset_url($input)
     {
         return 'assets/' . $input;
-=======
-    public static function asset_url ($input){
-        return '/s/files/123/t1/assets/' . $input;
->>>>>>> 7cd1322d617f0c921f627129d76e9edb3559ccfe
     }
 
     public static function asset_img_url($input, $key = null)
@@ -77,7 +68,6 @@ class FilterUrl
         return null;
     }
 
-<<<<<<< HEAD
     public static function link_to_tag($input)
     {
         return null;
@@ -91,18 +81,6 @@ class FilterUrl
     public static function link_to_remove_tag($input)
     {
         return null;
-=======
-    public static function link_to_tag($input){
-        return "<a href=".urlencode($input).">".$input."</a>";
-    }
-
-    public static function link_to_add_tag($input){
-        return "<a href=".urlencode($input).">".$input."</a>";
-    }
-    
-    public static function link_to_remove_tag ($input){
-        return "<a href=".urlencode($input).">".$input."</a>";
->>>>>>> 7cd1322d617f0c921f627129d76e9edb3559ccfe
     }
 
     public static function payment_type_img_url($input)

@@ -1,6 +1,6 @@
-<?php 
+<?php
 
-include(__DIR__."/vendor/autoload.php");
+include(__DIR__ . "/vendor/autoload.php");
 
 use Liquid\Liquid;
 use Liquid\Parser;
@@ -23,14 +23,14 @@ use Liquid\Parser;
 
 
 
-$server = (new Ncf\ShopifyTemplate\ThemeInstall(__DIR__.'/tests/templates/crave'));
-$server->run();
+$server = (new ShopifyTemplate\Theme(__DIR__ . '/tests/templates/crave'));
+$server->parse();
 
 exit;
 
 
 
-$template = new Ncf\ShopifyTemplate\Theme(__DIR__.'/tests/templates/crave');
+$template = new Ncf\ShopifyTemplate\Theme(__DIR__ . '/tests/templates/crave');
 // $contents = $template->render('index',[
 //     'request' => [
 //         'locale' => [
@@ -49,4 +49,3 @@ $template = new Ncf\ShopifyTemplate\Theme(__DIR__.'/tests/templates/crave');
 
 
 // file_put_contents('2.txt',$contents);
-

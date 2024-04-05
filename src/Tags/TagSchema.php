@@ -9,11 +9,7 @@
  * @package Liquid
  */
 
-<<<<<<< HEAD
 namespace ShopifyLiquid\Tags;
-=======
-namespace Ncf\ShopifyTemplate\Tags;
->>>>>>> 7cd1322d617f0c921f627129d76e9edb3559ccfe
 
 use Ncf\ShopifyTemplate\Nodes\SectionAttributeNode;
 

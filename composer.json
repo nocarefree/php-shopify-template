@@ -6,11 +6,7 @@
 	"type": "library",
     "autoload": {
         "psr-4": {
-<<<<<<< HEAD
-            "ShopifyLiquid\\": "src/"
-=======
-            "Ncf\\ShopifyTemplate\\": "src/"
->>>>>>> 7cd1322d617f0c921f627129d76e9edb3559ccfe
+            "ShopifyTemplate\\": "src/"
         }
     },
     "authors": [
@@ -20,9 +16,15 @@
         }
     ],
     "require": {
-        "php": ">= 7.0",
-        "illuminate/support": "^9.13",
-        "nocarefree/php-liquid": "dev-master",
-        "illuminate/config": "^9.14"
-    }
+        "php": ">= 8.0",
+        "illuminate/support": "^11.1",
+        "nocarefree/php-liquid": "dev-main",
+        "illuminate/config": ">9.14"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../php-liquid"
+        }
+    ]
 }

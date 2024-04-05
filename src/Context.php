@@ -9,19 +9,27 @@
  * @package Liquid
  */
 
-namespace Ncf\ShopifyTemplate;
+namespace ShopifyTemplate;
 
-use \Liquid\Context as BaseContext;
+use Liquid\Context as BaseContext;
+use ShopifyTemplate\Types;
 
 class Context extends BaseContext
 {
+    public $data = [
+        'additional_checkout_buttons' => false, //Returns true if a store has any payment providers with offsite checkouts, such as PayPal Express Checkout.
+        'address' =>  Types\AddressType::class //An address, such as a customer address or order shipping address.
+        
+    ];
 
-	public function __construct(Theme $theme) {
+
+    public function __construct(Theme $theme)
+    {
         $this->theme = $theme;
 
-		parent::__construct();
+        parent::__construct();
 
-        foreach([
+        foreach ([
             Filters\FilterArray::class,
             Filters\FilterColor::class,
             Filters\FilterFont::class,
@@ -32,21 +40,19 @@ class Context extends BaseContext
             Filters\FilterMoney::class,
             Filters\FilterString::class,
             Filters\FilterUrl::class
-        ] as $filter){
+        ] as $filter) {
             $this->registerFilterClass($filter);
         }
-	}
+    }
 
-    public function theme(){
+    public function theme()
+    {
         return $this->theme;
     }
 
 
-    public function renderSection($config = []){
+    public function renderSection($config = [])
+    {
         return $this->theme->renderSection($config);
     }
-
-
-
-
 }

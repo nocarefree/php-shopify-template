@@ -1,0 +1,61 @@
+type Address {
+  #The first line of the address.
+  address1: String
+
+  #The second line of the address.
+  #If no second line is specified, then nil is returned.
+  address2: String
+
+  # The city of the address.
+  city: String
+
+  #The company of the address.
+  #If no company is specified, then nil is returned.
+  company: String
+
+  #The country of the address.
+  country: Country
+
+  #The country of the address in ISO 3166-1 (alpha 2) format.
+  country_code: String
+
+  #The first name of the address.
+  first_name: String
+
+  #The ID of the address.
+  id: ID
+
+  #The last name of the address.
+  last_name: String
+
+  #A combination of the first and last names of the address.
+  name: String
+
+  #The phone number of the address.
+  #If no phone number is specified, then nil is returned.
+  phone: String
+
+  #The province of the address.
+  province: String
+
+  #The province of the address in ISO 3166-2 (alpha 2) format.
+  #The value doesn't include the preceding ISO 3166-1 country code.
+  province_code: String
+
+  #A combination of the first and second lines of the address.
+  street: String
+
+  #A summary of the address, including the following properties:
+  #First and last name
+  #First and second lines
+  #City
+  #Province
+  #Country
+  summary: String
+
+  #The relative URL for the address.
+  url: String
+
+  #The zip or postal code of the address.
+  zip: String
+}

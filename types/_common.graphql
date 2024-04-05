@@ -1,0 +1,12 @@
+#import address.graphql
+
+type Common {
+  #Returns true if a store has any payment providers with offsite checkouts, such as PayPal Express Checkout.
+  additional_checkout_buttons: Boolean
+
+  #An address, such as a customer address or order shipping address.
+  address: Address
+
+    #Creates an <option> tag for each country.
+  all_country_option_tags:String
+}

@@ -9,7 +9,7 @@
  * @package Liquid
  */
 
-namespace Ncf\ShopifyTemplate\Nodes;
+namespace ShopifyTemplate\Nodes;
 
 use Liquid\Tags\TagComment;
 use Liquid\Environment;
@@ -18,19 +18,20 @@ class SectionAttributeNode extends TagComment
 {
     public function parseExpression(Environment $env)
     {
-        if($this->depth > 1){
+        if ($this->depth > 1) {
             $name = $this->options['name'];
-			$line = $this->lineno;
+            $line = $this->lineno;
             $this->error = "Liquid syntax error (line {$line}): '{$name}' tag must not be nested inside other tags";
             $env->addSyntaxError("Liquid syntax error (line {$line}): '{$name}' tag must not be nested inside other tags");
         }
     }
 
-    public function getContent(){
+    public function getContent()
+    {
         $content = '';
-        foreach($this->nodelist as $node){
+        foreach ($this->nodelist as $node) {
             $content .= $node;
-        } 
+        }
         return $node;
     }
 }

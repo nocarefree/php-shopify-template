@@ -1,19 +1,22 @@
-<?php 
+<?php
 
-namespace Ncf\ShopifyTemplate;
+namespace ShopifyTemplate;
 
 use Liquid\LiquidException;
-use Illuminate\Support\Arr;
+use Liquid\Liquid;
 
-class Theme{
+class Theme
+{
 
     const PATH_TEMPLATE  = 'templates';
-    const PATH_LAYOUT = 'layout'; 
-    const PATH_SECTION = 'sections'; 
-    const PATH_SNIPPET = 'snippets'; 
-    const PATH_LOCALE = 'locales'; 
-    const PATH_CONFIG = 'config'; 
+    const PATH_LAYOUT = 'layout';
+    const PATH_SECTION = 'sections';
+    const PATH_SNIPPET = 'snippets';
+    const PATH_LOCALE = 'locales';
+    const PATH_CONFIG = 'config';
     const PATH_ASSET = 'assets';
+
+    protected $liquid;
 
 
     public $inputSettings = [
@@ -30,11 +33,11 @@ class Theme{
         'url' => 'string',
         'video_url' => 'string',
 
-        
+
         'color' => Drops\ColorDrop::class,
         'font_picker' => Drops\FontDrop::class,
         'image_picker' => Drops\ImageDrop::class,
-        'link_list' => Drops\LinkListDrop::class, 
+        'link_list' => Drops\LinkListDrop::class,
         'liquid' => Drops\LiquidDrop::class,
     ];
 
@@ -44,48 +47,91 @@ class Theme{
     protected $locale;
 
 
-    public function __construct(ThemeCache $cache)
+    public function __construct($dir, ThemeCache $cache)
     {
+        $this->liquid = new Liquid($dir);
+
         $this->cache = $cache;
         $this->drops = [];
         $this->context = new Context($this); //创建数据流
         $this->translate = new Translate($this);
 
         $this->initDrops();
+    }
+
+    public function parse()
+    {
+        if ($this->parseThemeArchitecture()) {
+        }
+    }
+
+    public function parseThemeArchitecture()
+    {
+        $archite = [];
+
+        $fileSystem = $this->liquid->getFileSystem();
+
+        // foreach([
+        //     'assets'=> [
+        //         'type'=>['image/*, font/*, .ttf, .eot, .woff, .woff2, .css, .scss, .js, .json, .liquid'],
+        //     ],
+        //     'confg'=>['type'=>'json'],
+        //     'layout'=>[
+        //         'type'=>['.liquid'],
+        //         'required'=>['theme.liquid'],
+        //     ],
+        //     'locales'=>[],
+        // ] as $dir){
+
+        // }
+
+        // $files = $file->listContents('layout',1);
+
+        // $fileSystem->fileExists('layout/theme.liquid');
+
+        // foreach(){
+        //     $archite
+        // }
 
     }
 
-    public function cache(){
+
+
+    public function cache()
+    {
         return $this->cache;
     }
 
-    public function setIntputDrop($key, $value = null){
-        if(!is_array($key)){
-            $t = [$key=>$value];
-        }else{
+    public function setIntputDrop($key, $value = null)
+    {
+        if (!is_array($key)) {
+            $t = [$key => $value];
+        } else {
             $t = $key;
         }
 
-        foreach($t as $k=>$v){
+        foreach ($t as $k => $v) {
             $this->inputSettings[$k] = $v;
         }
         return $this;
     }
 
     // 设置语言
-    public function setLocale($isoCode){
+    public function setLocale($isoCode)
+    {
         $this->translate->set($isoCode);
 
-        $this->context->setFilters(['t'=> function($input, $data = []){
+        $this->context->setFilters(['t' => function ($input, $data = []) {
             return $this->translate->get($input, $data);
         }]);
         return $this;
     }
 
-    public function getThemeDrop($name, $args = null){
-        if(isset($this->inputSettings[$name])){
-            $type = $this->inputSettings[$name]; 
-            switch($type){
+    public function getThemeDrop($name, $args = null)
+    {
+        if (isset($this->inputSettings[$name])) {
+            $type = $this->inputSettings[$name];
+            switch ($type) {
                 case 'string':
                     return (string)$args;
                 case 'int':
@@ -95,43 +141,45 @@ class Theme{
                 default:
                     return new $type($args);
             }
-        }else{
-            throw new LiquidException('"'.$name.'" type is invalid');
+        } else {
+            throw new LiquidException('"' . $name . '" type is invalid');
         }
     }
 
-    public function initDrops(){
-        $schemaFile = $this->cache->get(Theme::PATH_CONFIG,'settings_schema');
-        $settingsFile = $this->cache->get(Theme::PATH_CONFIG,'settings_data');
+    public function initDrops()
+    {
+        $schemaFile = $this->cache->get(Theme::PATH_CONFIG, 'settings_schema');
+        $settingsFile = $this->cache->get(Theme::PATH_CONFIG, 'settings_data');
 
 
-        $this->drops['sections'] =  new Drops\SectionsDrop( $this->cache->getFiles(function($file){
+        $this->drops['sections'] =  new Drops\SectionsDrop($this->cache->getFiles(function ($file) {
             return $file && $file['path'] == Theme::PATH_SECTION && $file['node'];
         }));
 
         $this->drops['theme'] = new Drops\ThemeDrop($this, $schemaFile['node'], $settingsFile['node']);
-        $this->drops['families'] = new Drops\FontFamiliesDrop(); 
-
+        $this->drops['families'] = new Drops\FontFamiliesDrop();
     }
 
-    public function getDrop($name): \Liquid\Models\Drop{
-        return $this->drops[$name]?? new Drops\EmptyDrop;
+    public function getDrop($name): \Liquid\Models\Drop
+    {
+        return $this->drops[$name] ?? new Drops\EmptyDrop;
     }
 
-    public function renderSection($config){
+    public function renderSection($config)
+    {
 
         $sectionFile = $this->cache->get(Theme::PATH_SECTION, $config['type']);
-        if(empty($sectionFile)){
-            return "Liquid error: Error in tag 'section' - '".$config['type']."' is not a valid section type";
+        if (empty($sectionFile)) {
+            return "Liquid error: Error in tag 'section' - '" . $config['type'] . "' is not a valid section type";
         }
 
 
         $this->context->push();
         $this->context->registers['in_section'] = $config['type'];
 
-        
 
-        $config['settings'] = $config['settings'] ?? ( $this->getDrop('theme')->sections[$config['type']]  ?? [] );
+
+        $config['settings'] = $config['settings'] ?? ($this->getDrop('theme')->sections[$config['type']]  ?? []);
 
         $schema = $this->getDrop('sections')->schema[$config['type']] ?? [];
 
@@ -141,13 +189,14 @@ class Theme{
 
         $content = $sectionFile['node']->render($this->context);
 
-        $this->context->pop(); 
+        $this->context->pop();
         unset($this->context->registers['in_section']);
 
         return $content;
     }
 
-    public function render($template, $data = []){
+    public function render($template, $data = [])
+    {
 
         $header = new Drops\ContentForHeader();
         $data['content_for_header'] = $header;
@@ -155,32 +204,32 @@ class Theme{
 
         $this->context->setCommon($data);
         $this->context->registers['sections'] = [];
-        
+
         $file = $this->cache->get(Theme::PATH_TEMPLATE, $template);
-        if(!$file){
-            throw new \Liquid\FileNoFound( Theme::PATH_TEMPLATE.'/' .  $template );
+        if (!$file) {
+            throw new \Liquid\FileNoFound(Theme::PATH_TEMPLATE . '/' .  $template);
         }
 
         $content = '';
         $node = $file['node'];
-        
-        if($file['type'] == 'JSON'){
+
+        if ($file['type'] == 'JSON') {
             $layout = 'theme';
-            foreach($node['order'] as $sectionId){
-                if(isset($node['sections'][$sectionId])){
+            foreach ($node['order'] as $sectionId) {
+                if (isset($node['sections'][$sectionId])) {
                     $section = $node['sections'][$sectionId];
                     $section['id'] = $sectionId;
-                    
+
                     $content .= $this->renderSection($section);
                 }
             }
 
-            if(isset($node['layout'])){
+            if (isset($node['layout'])) {
                 $layout = $node['layout'];
             }
-        }else{
+        } else {
             $content .= $node->render($this->context);
-            if(isset($this->context->registers['layout'])){
+            if (isset($this->context->registers['layout'])) {
                 $layout = $this->context->registers['layout'];
             }
         }
@@ -189,24 +238,25 @@ class Theme{
         $this->context->set('content_for_layout', $contentDrop);
 
         $layoutFile = $this->cache->get(Theme::PATH_LAYOUT, $layout);
-        if(!empty($layoutFile)){
+        if (!empty($layoutFile)) {
             $content = $layoutFile['node']->render($this->context);
-        }else{
+        } else {
             $content = $contentDrop->toHtml();
         }
 
         return str_replace((string)$header, $header->toHtml(), $content);
     }
 
-    public function renderTemplateSections($sections){
+    public function renderTemplateSections($sections)
+    {
         $contentForLayout = '';
-        foreach($sections as $section){
-            if($section instanceof LiquidException){
-                $contentForLayout .= '<!-- Liquid error:  '.$section->getMessage().' -->';
-            }else{
-                try{
+        foreach ($sections as $section) {
+            if ($section instanceof LiquidException) {
+                $contentForLayout .= '<!-- Liquid error:  ' . $section->getMessage() . ' -->';
+            } else {
+                try {
                     $contentForLayout .= $this->renderSection($section);
-                }catch(\Liquid\LiquidException $e){
+                } catch (\Liquid\LiquidException $e) {
                     $contentForLayout .= $e->getMessage();
                 }
             }
@@ -215,18 +265,19 @@ class Theme{
     }
 
 
-    public function getContentForHeader(){
+    public function getContentForHeader()
+    {
         $javascript = false;
         $stylesheet = false;
-        if($this->env->getRoot() && $this->env->getRoot()->options['sections']){
+        if ($this->env->getRoot() && $this->env->getRoot()->options['sections']) {
             $sections = $this->env->getRoot()->options['sections'];
-            foreach($sections as $section=>$v){
-                if(isset($this->sections[$v])){
-                    if(isset($this->sections[$v]->options['javascript'])){
+            foreach ($sections as $section => $v) {
+                if (isset($this->sections[$v])) {
+                    if (isset($this->sections[$v]->options['javascript'])) {
                         $javascript = true;
                     }
 
-                    if(isset($this->sections[$v]->options['stylesheet'])){
+                    if (isset($this->sections[$v]->options['stylesheet'])) {
                         $stylesheet = true;
                     }
                 }
@@ -234,10 +285,8 @@ class Theme{
         }
     }
 
-    public function getContext(){
+    public function getContext()
+    {
         return $this->context;
     }
-
-  
-
 }
