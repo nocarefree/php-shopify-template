@@ -23,14 +23,14 @@ use Liquid\Parser;
 
 
 
-$server = (new ShopifyTemplate\Theme(__DIR__ . '/tests/templates/crave'));
-$server->parse();
+$server = (new ShopifyTemplate\ThemeArchitecture());
+$server->loadLocalFiles(__DIR__ . '/test/templates/crave');
 
 exit;
 
 
 
-$template = new Ncf\ShopifyTemplate\Theme(__DIR__ . '/tests/templates/crave');
+$template = new Ncf\ShopifyTemplate\Theme(__DIR__ . '/test/templates/crave');
 // $contents = $template->render('index',[
 //     'request' => [
 //         'locale' => [
