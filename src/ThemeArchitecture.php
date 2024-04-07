@@ -8,6 +8,7 @@ use Liquid\FileSystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\FileAttributes;
 use Illuminate\Support\Str;
+use Seld\JsonLint;
 
 class ThemeArchitecture
 {
@@ -34,6 +35,13 @@ class ThemeArchitecture
                     throw new \Exception("Missing {{content_for_layout}} in the content section of the template");
                 }
                 break;
+            case 'templates':
+                if (Str::startsWith($path, '.json')) {
+                    $data = $this->jsonDecode($content);
+                    if (!empty($data) && !empty($data['sections']) && !empty($data['order'])) {
+                    }
+                }
+                break;
         }
     }
 
@@ -43,6 +51,7 @@ class ThemeArchitecture
 
         $this->structures = [
             'assets' => $this->getAssets(),
+            'templates' => $this->getTemplates(),
             'config' => $this->getConfig(),
             'layout' => $this->getLayout(),
             'locals' => $this->getLocales(),
@@ -117,6 +126,32 @@ class ThemeArchitecture
         return $data;
     }
 
+    private function getTemplates()
+    {
+        $data = [];
+        $files = $this->fileSystem->listContents('templates', 1);
+        foreach ($files as $file) {
+            $path = $file->path();
+            if ($file instanceof FileAttributes && Str::endsWith($path, ['.liquid', '.json'])) {
+
+                $content = $this->fileSystem->read($path);
+                $this->checkFile($path, $content);
+                $data[] = $file->path();
+            }
+        }
+        $files = $this->fileSystem->listContents('templates/customers', 1);
+        foreach ($files as $file) {
+            $path = $file->path();
+            if ($file instanceof FileAttributes && Str::endsWith($path, ['.liquid', '.json'])) {
+
+                $content = $this->fileSystem->read($path);
+                $this->checkFile($path, $content);
+                $data[] = $file->path();
+            }
+        }
+        return $data;
+    }
+
     private function getLocales()
     {
         $data = [];
@@ -168,5 +203,74 @@ class ThemeArchitecture
             }
         }
         return $data;
+    }
+
+    private function jsonDecode($content)
+    {
+        $json = @json_decode($content);
+        if (json_last_error()) {
+            $parser = new JsonLint\JsonParser();
+            try {
+                $parser->parse($content, JsonLint\JsonParser::DETECT_KEY_CONFLICTS);
+            } catch (JsonLint\DuplicateKeyException $e) {
+                $details = $e->getDetails();
+                throw new \Exception("Invalid JSON: unexpected token '" . $details['key'] . "' at line '" . $details['line'] . "', column 7");
+            }
+        }
+        return $json;
+    }
+
+    private function verifyJsonTemplate($data)
+    {
+        $errors = [];
+        if (!isset($data['sections'])) {
+            $errors[] = "missing required key 'sections'";
+        } else if (empty($data['sections'])) {
+            $errors[] = "sections: can't be blank";
+        } else if (!is_array($data['sections'])) {
+            $errors[] = "sections: must be an object";
+        }
+
+        if (!isset($data['order'])) {
+            $errors[] = "missing required key 'order'";
+        } else if (empty($data['order'])) {
+            $errors[] = "order: can't be blank";
+        } else if (!is_array($data['order'])) {
+            $errors[] = "order: must be an array";
+        }
+
+        if ($errors) {
+        }
+
+        $sections = [];
+        foreach ($data['sections'] as $key => $value) {
+            if (isset($data['order'][$key])) {
+                $errors[] = "Section id '$key' must exist in order";
+            }
+
+            $sections[] = $value['type'];
+        }
+
+        foreach ($data['order'] as $key => $value) {
+            if (isset($data['sections'][$key])) {
+                $errors[] = "Section id '$key' must exist in sections";
+            }
+        }
+
+        if ($errors) {
+        }
+
+        foreach ($sections as $id) {
+            if (!$this->hasSection($id)) {
+                $errors[] = "Section type '$id' does not refer to an existing section file";
+            }
+        }
+
+
+        if ($errors) {
+            return $errors;
+        } else {
+            return false;
+        }
     }
 }

@@ -19,7 +19,8 @@
         "php": ">= 8.0",
         "illuminate/support": "^11.1",
         "nocarefree/php-liquid": "dev-main",
-        "illuminate/config": ">9.14"
+        "illuminate/config": ">9.14",
+        "seld/jsonlint": "^1.10"
     },
     "repositories": [
         {
