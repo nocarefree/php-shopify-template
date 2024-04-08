@@ -20,7 +20,8 @@
         "illuminate/support": "^11.1",
         "nocarefree/php-liquid": "dev-main",
         "illuminate/config": ">9.14",
-        "seld/jsonlint": "^1.10"
+        "seld/jsonlint": "^1.10",
+        "justinrainbow/json-schema": "^5.2"
     },
     "repositories": [
         {

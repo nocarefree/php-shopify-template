@@ -23,8 +23,9 @@ use Liquid\Parser;
 
 
 
+
 $server = (new ShopifyTemplate\ThemeArchitecture());
-$server->loadLocalFiles(__DIR__ . '/test/templates/crave');
+$server->loadLocalFiles(__DIR__ . '/test/templates/spotlight');
 
 exit;
 
