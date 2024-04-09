@@ -9,11 +9,6 @@ use Liquid\Context;
 class ShopifyTemplate
 {
 
-    const PATH_TEMPLATE  = 'templates';
-    const PATH_LAYOUT = 'layout';
-    const PATH_SECTION = 'sections';
-    const PATH_SNIPPET = 'snippets';
-    const PATH_LOCALE = 'locales';
 
     private $tags = [
         //Template

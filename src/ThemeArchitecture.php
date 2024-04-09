@@ -31,6 +31,21 @@ class ThemeArchitecture
     public function __construct()
     {
         $this->liquid = new Liquid();
+
+        $this->liquid->registerFilters([
+            Filters\FilterArray::class,
+            Filters\FilterColor::class,
+            Filters\FilterFont::class,
+            Filters\FilterHtml::class,
+            Filters\FilterMath::class,
+            Filters\FilterMedia::class,
+            Filters\FilterMetafield::class,
+            Filters\FilterMoney::class,
+            Filters\FilterString::class,
+            Filters\FilterUrl::class
+        ]);
+
+
         $this->schemaMap = include(__DIR__ . '/schema.php');
     }
 
