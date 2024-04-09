@@ -9,7 +9,7 @@
  * @package Liquid
  */
 
-namespace ShopifyLiquid;
+namespace ShopifyTemplate;
 
 use Liquid\LiquidException;
 use Liquid\FileSystem;

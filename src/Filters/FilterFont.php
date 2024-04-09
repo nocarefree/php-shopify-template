@@ -1,8 +1,8 @@
 <?php
 
-namespace ShopifyLiquid\Filters;
+namespace ShopifyTemplate\Filters;
 
-use Ncf\ShopifyTemplate\Drops\FontDrop;
+use ShopifyTemplate\Drops\FontDrop;
 
 // https://shopify.dev/api/liquid/filters/font-filters
 

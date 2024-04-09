@@ -1,6 +1,6 @@
 <?php
 
-namespace ShopifyLiquid;
+namespace ShopifyTemplate;
 
 
 use Liquid\LiquidException;

@@ -1,5 +1,50 @@
 <?php
 
+$config = <<<JSON
+{
+    "type": "object",
+    "properties": {
+        "current": {
+            "onlyOf":[
+                {"type": "string"},
+                {"type": "object"}
+            ]
+        } ,
+        "presets":{"type": "object"},
+    },
+    "required": ["current", "presets"],
+}
+JSON;
+
+$inputSetting = <<<JSON
+{
+    "type": "object",
+    "properties": {
+        "type": {"type":"string"},
+        "id":{"type":"string"},
+        "label": { "type": "string"},
+        "default": { "type": "string" },
+        "info": { "type" : "string"}
+    },
+    "required": ["type", "id", "label"],
+}
+JSON;
+
+$sidebarSetting = <<<JSON
+{
+    "type": "object",
+    "properties": {
+        "type": { "enum": ["header", "paragraph"] },
+        "content": { "type": "string"},
+        "info": { "type" : "string"}
+    },
+    "required": ["type", "content"],
+    "additionalProperties":false
+
+}
+JSON;
+
+
 $template = <<<JSON
 {
     "type": "object",
@@ -44,6 +89,6 @@ JSON;
 
 
 return [
-    'sectionGroup' => json_decode($sectionGroup),
-    'template' => json_decode($template),
+    'sections' => json_decode($sectionGroup),
+    'templates' => json_decode($template),
 ];

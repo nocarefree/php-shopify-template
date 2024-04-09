@@ -1,15 +1,16 @@
 <?php
 
-namespace Ncf\ShopifyTemplate\Drops;
+namespace ShopifyTemplate\Drops;
 
-class ContentForHeader extends \Liquid\Models\Drop{
-    public $content = '';
+class ContentForHeader extends \Liquid\Models\Drop
+{
+  public $content = '';
 
-    function __construct()
-    {
-        $this->id = '#'.md5(time()).'#'; 
+  function __construct()
+  {
+    $this->id = '#' . md5(time()) . '#';
 
-$this->content = <<<EOF
+    $this->content = <<<EOF
 <script>window.performance && window.performance.mark && window.performance.mark('shopify.content_for_header.start');</script><meta id="shopify-digital-wallet" name="shopify-digital-wallet" content="/51665633432/digital_wallets/dialog">
 <script id="shopify-features" type="application/json">{"accessToken":"57df1d22af9f311c1394ca045d499f85","betas":["rich-media-storefront-analytics"],"domain":"test-nocarefree.myshopify.com","predictiveSearch":true,"shopId":51665633432,"smart_payment_buttons_url":"https:\/\/cdn.shopify.com\/shopifycloud\/payment-sheet\/assets\/latest\/spb.en.js?v=2","dynamic_checkout_cart_url":"https:\/\/cdn.shopify.com\/shopifycloud\/payment-sheet\/assets\/latest\/dynamic-checkout-cart.en.js?v=2","locale":"en"}</script>
 <script>var Shopify = Shopify || {};
@@ -60,14 +61,15 @@ Shopify.routes.root = "/";</script>
 <script integrity="sha256-qzgBevPPdZ2wrwu9HnUin2oYn1vx8ttCFpYwmYuWkCE=" data-source-attribution="shopify.loadfeatures" defer="defer" src="//cdn.shopify.com/shopifycloud/shopify/assets/storefront/load_feature-ab38017af3cf759db0af0bbd1e75229f6a189f5bf1f2db42169630998b969021.js" crossorigin="anonymous"></script>
 <script integrity="sha256-h+g5mYiIAULyxidxudjy/2wpCz/3Rd1CbrDf4NudHa4=" data-source-attribution="shopify.dynamic-checkout" defer="defer" src="//cdn.shopify.com/shopifycloud/shopify/assets/storefront/features-87e8399988880142f2c62771b9d8f2ff6c290b3ff745dd426eb0dfe0db9d1dae.js" crossorigin="anonymous"></script>
 EOF;
-    }
+  }
 
-    function __toString(){
-        return $this->id;
-    }
+  function __toString()
+  {
+    return $this->id;
+  }
 
-    function toHtml(){
-        return $this->content;
-    }
-
+  function toHtml()
+  {
+    return $this->content;
+  }
 }

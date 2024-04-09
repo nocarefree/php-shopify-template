@@ -13,11 +13,15 @@ use Seld\JsonLint;
 use JsonSchema\SchemaStorage;
 use JsonSchema\Validator;
 use JsonSchema\Constraints\Factory;
+use Liquid\Liquid;
+use stdClass;
 
 class ThemeArchitecture
 {
 
     protected FileSystem $fileSystem;
+    protected Liquid $liquid;
+    protected Context $context;
     protected array $structures = [];
     protected array $errors = [];
     protected array $schemaValidator;
@@ -26,57 +30,88 @@ class ThemeArchitecture
 
     public function __construct()
     {
-
+        $this->liquid = new Liquid();
         $this->schemaMap = include(__DIR__ . '/schema.php');
     }
 
-    private function checkFile($path, $content)
+    public function render($name, $data)
     {
-        list($type, $name) = explode('/', $path);
+        $this->context = new Context($data);
+        if (isset($this->structures["templates/$name/.liquid"])) {
+            $layout = $this->structures["templates/$name/.liquid"];
+        } else {
+            $template = $this->structures["templates/$name/.json"] ?? $this->structures["templates/404.json"];
 
-        switch ($type) {
-            case 'layout':
-                if (!preg_match('#{{[\s]?+content_for_header[\s]?+}}#', $content)) {
-                    $this->errors[] = ("Missing {{content_for_header}} in the head section of the template");
-                }
-
-                if (!preg_match('#{{[\s]?+content_for_layout[\s]?+}}#', $content)) {
-                    $this->errors[] = ("Missing {{content_for_layout}} in the content section of the template");
-                }
-                break;
-            case 'sections':
-
-                if (Str::endsWith($path, '.liquid')) {
-                } else if (Str::endsWith($path, '.json')) {
-                    $res = $this->jsonDecode($content);
-                    if ($res['error']) {
-                        $this->errors[] = $res['error'];
-                    } else {
-                        $this->errors[] = [...$this->verifyTemplateSchema($res['data'])];
-                    }
-                }
-                break;
-            case 'templates':
-                if (Str::endsWith($path, '.liquid')) {
-                } else if (Str::endsWith($path, '.json')) {
-                    $res = $this->jsonDecode($content);
-                    if ($res['error']) {
-                        $this->errors[] = $res['error'];
-                    } else {
-                        $this->errors[] = [...$this->verifySectionGroupSchema($res['data'])];
-                    }
-                }
-                break;
-            case 'config':
-
-                $res = $this->jsonDecode($content);
-                if ($res['error']) {
-                    $this->errors[] = $res['error'];
-                } else {
-                    $this->errors[] = [...$this->verifySectionGroupSchema($res['data'])];
-                }
-                break;
+            $layout = isset($template['layout']) &&  isset($this->structures['layout/' . $template['layout'] . '.liquid']) ?
+                $this->structures['layout/' . $template['layout'] . '.liquid'] : $this->structures['layout/theme.liquid'];
         }
+
+        $layout->render();
+    }
+
+    private function renderSectionGroup($group)
+    {
+        $content = [];
+        foreach ($group['order'] as $key) {
+            $content[] = $this->renderSection($key, $group['sections'][$key]);
+        }
+        return implode("", $content);
+    }
+
+    private function renderSection($name, $config = [])
+    {
+        if (isset($this->structures["sections/$name/.liquid"])) {
+            $section = $this->structures["sections/$name/.liquid"] ?? '';
+            $context = $this->context->merge(['section' => new Drops\SectionDrop($config)], true);
+
+            return $section->render($context);
+        } else if (isset($this->structures["sections/$name/.json"])) {
+            return $this->renderSectionGroup($this->structures["sections/$name/.json"]);
+        } else {
+            return "Liquid error: Error in tag 'section' - '" . $name . "' is not a valid section type";
+        }
+    }
+
+
+    public function checkFile($path, &$content)
+    {
+        $errors = [];
+        list($type, $name) = explode('/', $path);
+        if (Str::endsWith($path, '.liquid')) {
+            switch ($type) {
+                case 'layout':
+                    if (!preg_match('#{{[\s]?+content_for_header[\s]?+}}#', $content)) {
+                        $errors[] = ("Missing {{content_for_header}} in the head section of the template");
+                    }
+                    if (!preg_match('#{{[\s]?+content_for_layout[\s]?+}}#', $content)) {
+                        $errors[] = ("Missing {{content_for_layout}} in the content section of the template");
+                    }
+                    break;
+                case 'sections':
+                    break;
+                default:
+                    break;
+            }
+            $content = $this->liquid->loadString($content);
+            try {
+                $content->parse();
+            } catch (\Exception $e) {
+                $errors[] = $e;
+            }
+        } else {
+            try {
+                $data = $this->jsonDecode($content);
+                $this->verifyJsonSchema($data, $type);
+
+                if (empty($errors) && in_array($type, ['sections', 'templates'])) {
+                    $this->verifySectionOrderSchema($data);
+                }
+                $content = $data;
+            } catch (ContentVerifyException $e) {
+                $errors = $e->errors();
+            }
+        }
+        return $errors;
     }
 
     public function loadLocalFiles($dir)
@@ -94,7 +129,9 @@ class ThemeArchitecture
         ];
 
         foreach ($this->structures as $value) {
-            $this->checkFile($value, $this->fileSystem->read($value));
+            if (Str::endsWith($value, ['.liquid', '.json'])) {
+                $this->checkFile($value, $this->fileSystem->read($value));
+            }
         }
     }
 
@@ -175,9 +212,6 @@ class ThemeArchitecture
                 Str::endsWith($fileName, ['.liquid', '.json']) &&
                 Str::startsWith($fileName, ['404.', 'article.', 'blog.', 'cart.', 'collection.', 'gift_card.', 'index.', 'list-conllections.', 'page.', 'password.', 'product.', 'search.'])
             ) {
-
-                //$content = $this->fileSystem->read($path);
-                //$this->checkFile($path, $content);
                 $data[] = $file->path();
             }
         }
@@ -189,9 +223,6 @@ class ThemeArchitecture
                 Str::endsWith($fileName, ['.liquid', '.json']) &&
                 Str::startsWith($fileName, ['account.', 'activate_account.', 'addresses.', 'login.', 'order.', 'register.', 'reset_password.'])
             ) {
-
-                //$content = $this->fileSystem->read($path);
-                //$this->checkFile($path, $content);
                 $data[] = $file->path();
             }
         }
@@ -254,11 +285,10 @@ class ThemeArchitecture
     private function jsonDecode($content)
     {
         $json = @json_decode($content);
-        $error = '';
         if (json_last_error()) {
-            $error = $this->verifyJson($content);
+            $this->verifyJson($content);
         }
-        return ['data' => $json, 'error' => $error];
+        return !empty($json) ? $json : [];
     }
 
 
@@ -273,20 +303,15 @@ class ThemeArchitecture
             $parser->parse($content, JsonLint\JsonParser::DETECT_KEY_CONFLICTS);
         } catch (JsonLint\DuplicateKeyException $e) {
             $details = $e->getDetails();
-            $error = "Invalid JSON: unexpected token '" . $details['key'] . "' at line '" . $details['line'] . "', column 7";
+            throw new ContentVerifyException("Invalid JSON: unexpected token '" . $details['key'] . "' at line '" . $details['line'] . "', column 7");
         }
         return $error;
     }
 
-    private function verifySectionOrder($data)
-    {
-    }
 
     public function verifySectionOrderSchema(object $data): array
     {
         $errors = [];
-
-
         foreach ($data->sections as $key => $value) {
             if (!property_exists($value, 'type')) {
                 $errors[] = "Section id '$key' is missing a type field";
@@ -310,46 +335,29 @@ class ThemeArchitecture
                 $errors[] = "Section type '$id' does not refer to an existing section file";
             }
         }
+
         return $errors;
     }
 
 
-    public function verifySectionGroupSchema(object $data): array
+    public function verifyJsonSchema(object | array $data, $type): array
     {
-        $errors = [];
-        $validator = new Validator;
-        $validator->validate($data, $this->schemaMap['sectionGroup']);
 
-        if (!$validator->isValid()) {
-            foreach ($validator->getErrors() as $error) {
-                $errors[] = printf("[%s] %s\n", $error['property'], $error['message']);
+        $errors = [];
+        $schema = $this->schemaMap[$type] ?? false;
+
+        if ($schema) {
+
+            $validator = new Validator;
+            $validator->validate($data, $schema);
+
+            if (!$validator->isValid()) {
+                foreach ($validator->getErrors() as $error) {
+                    $errors[] = printf("[%s] %s\n", $error['property'], $error['message']);
+                }
             }
         }
-
-        if ($errors) {
-            return $errors;
-        }
-
-        return $this->verifySectionOrderSchema($data);
-    }
-
-    public function verifyTemplateSchema(object $data): array
-    {
-        $errors = [];
-        $validator = new Validator;
-        $validator->validate($data, $this->schemaMap['template']);
-
-        if (!$validator->isValid()) {
-            foreach ($validator->getErrors() as $error) {
-                $errors[] = printf("[%s] %s\n", $error['property'], $error['message']);
-            }
-        }
-
-        if ($errors) {
-            return $errors;
-        }
-
-        return $this->verifySectionOrderSchema($data);
+        return $errors;
     }
 
     public function hasSection($id)

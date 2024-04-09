@@ -9,7 +9,7 @@
  * @package Liquid
  */
 
-namespace Ncf\ShopifyTemplate\Tags;   
+namespace ShopifyTemplate\Tags;
 
 use Liquid\Nodes\Block;
 use Liquid\Context;
@@ -21,18 +21,14 @@ class TagPaginate extends Block
 {
 	public function parseExpression(Environment $env)
 	{
-        $index = 0;
-		if(preg_match(Parser::REGEX_VAR, $this->options['expression'], $matches, 0, $index)){
+		$index = 0;
+		if (preg_match(Parser::REGEX_VAR, $this->options['expression'], $matches, 0, $index)) {
 			$this->options['arr'] =  $matches[0];
-            $index = strlen($matches[0]);
+			$index = strlen($matches[0]);
 
-            if(preg_match('/\s?by (.*)/', $this->options['expression'], $matches)){
-                $this->options['by'] =  $matches[1];
-    
-            }
-
+			if (preg_match('/\s?by (.*)/', $this->options['expression'], $matches)) {
+				$this->options['by'] =  $matches[1];
+			}
 		}
 	}
-
-
 }

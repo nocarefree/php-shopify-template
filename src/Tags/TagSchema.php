@@ -9,9 +9,9 @@
  * @package Liquid
  */
 
-namespace ShopifyLiquid\Tags;
+namespace ShopifyTemplate\Tags;
 
-use Ncf\ShopifyTemplate\Nodes\SectionAttributeNode;
+use ShopifyTemplate\Nodes\SectionAttributeNode;
 
 class TagSchema extends SectionAttributeNode
 {

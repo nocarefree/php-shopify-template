@@ -1,6 +1,6 @@
 <?php
 
-namespace ShopifyLiquid\Filters;
+namespace ShopifyTemplate\Filters;
 
 use Illuminate\Support\Str;
 
@@ -123,7 +123,7 @@ class FilterString
     {
         return null;
     }
-        
+
 
     public static function strip($input)
     {

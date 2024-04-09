@@ -1,30 +1,35 @@
-<?php 
+<?php
 
-namespace Ncf\ShopifyTemplate;
+namespace ShopifyTemplate;
 
 
-class ThemeCache{
+class ThemeCache
+{
 
     public $files;
 
-    function __construct($theme){
+    function __construct($theme)
+    {
         $server = new ThemeInstall($theme);
         $server->run();
 
         $this->files = $server->getFiles();
     }
 
-    public function getFiles($filter = null){
+    public function getFiles($filter = null)
+    {
         return is_callable($filter) ? array_filter($this->files, $filter) : $this->files;
     }
 
-    public function getTheme(){
+    public function getTheme()
+    {
         $this->theme;
     }
 
-    public function get($path, $name){
-        foreach($this->files as $file){
-            if($file['path'] == $path && $file['name'] == $name){
+    public function get($path, $name)
+    {
+        foreach ($this->files as $file) {
+            if ($file['path'] == $path && $file['name'] == $name) {
                 return $file;
             }
         }
@@ -32,29 +37,33 @@ class ThemeCache{
     }
 
 
-    public function getLayout($name){
+    public function getLayout($name)
+    {
         return $this->get(Theme::PATH_LOCALE, $name);
     }
 
-    public function getSection($name){
+    public function getSection($name)
+    {
         return $this->get(Theme::PATH_SECTION, $name);
     }
 
-    public function getTemplate($name){
+    public function getTemplate($name)
+    {
         return $this->get(Theme::PATH_TEMPLATE, $name);
     }
 
-    public function getSnippet($name){
+    public function getSnippet($name)
+    {
         return $this->get(Theme::PATH_SNIPPET, $name);
     }
 
-    public function getConfig($name){
+    public function getConfig($name)
+    {
         return $this->get(Theme::PATH_CONFIG, $name);
     }
 
-    public function getLocale($name){
+    public function getLocale($name)
+    {
         return $this->get(Theme::PATH_LOCALE, $name);
     }
-
-
 }

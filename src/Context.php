@@ -16,16 +16,18 @@ use ShopifyTemplate\Types;
 
 class Context extends BaseContext
 {
+    protected $inSection = false;
+
     public $data = [
         'additional_checkout_buttons' => false, //Returns true if a store has any payment providers with offsite checkouts, such as PayPal Express Checkout.
         'address' =>  Types\AddressType::class //An address, such as a customer address or order shipping address.
-        
+
     ];
 
 
-    public function __construct(Theme $theme)
+    public function __construct($data = [], $inSection = false)
     {
-        $this->theme = $theme;
+        $this->inSection = $inSection;
 
         parent::__construct();
 
@@ -43,6 +45,11 @@ class Context extends BaseContext
         ] as $filter) {
             $this->registerFilterClass($filter);
         }
+    }
+
+    public function marge($data, $inSection = false)
+    {
+        return new self(array_merge($this->data, $data), $inSection);
     }
 
     public function theme()

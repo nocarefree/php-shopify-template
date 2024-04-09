@@ -1,8 +1,7 @@
-<?php 
+<?php
 
-namespace Ncf\ShopifyTemplate\Drops;
+namespace ShopifyTemplate\Drops;
 
-class EmptyDrop extends \Liquid\Models\Drop{
-
-
+class EmptyDrop extends \Liquid\Models\Drop
+{
 }

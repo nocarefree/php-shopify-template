@@ -1,6 +1,6 @@
 <?php
 
-namespace ShopifyLiquid\Filters;
+namespace ShopifyTemplate\Filters;
 
 
 //  https://shopify.dev/api/liquid/filters/array-filters

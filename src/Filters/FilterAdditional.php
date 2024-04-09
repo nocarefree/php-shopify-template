@@ -1,6 +1,6 @@
 <?php
 
-namespace ShopifyLiquid\Filters;
+namespace ShopifyTemplate\Filters;
 
 use Illuminate\Support\Arr;
 

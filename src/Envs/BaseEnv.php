@@ -1,10 +1,11 @@
-<?php 
+<?php
 
-namespace Ncf\ShopifyTemplate\Envs;
+namespace ShopifyTemplate\Envs;
 
 use Liquid\Environment;
 
-class BaseEnv extends Environment{
+class BaseEnv extends Environment
+{
 
     public function __construct($fileSystem = null)
     {
@@ -12,18 +13,16 @@ class BaseEnv extends Environment{
 
         $this->registerTags([
             //Template
-            'render'=> \Ncf\ShopifyTemplate\Tags\TagRender::class,
-            'layout'=> \Ncf\ShopifyTemplate\Tags\TagLayout::class,
-            'section'=> \Ncf\ShopifyTemplate\Tags\TagSection::class,
-    
+            'render' => \ShopifyTemplate\Tags\TagRender::class,
+            'layout' => \ShopifyTemplate\Tags\TagLayout::class,
+            'section' => \ShopifyTemplate\Tags\TagSection::class,
+
             //Iteration
-            'paginate'=> \Ncf\ShopifyTemplate\Tags\TagPaginate::class,
-    
+            'paginate' => \ShopifyTemplate\Tags\TagPaginate::class,
+
             //Html
-            'form'=> \Ncf\ShopifyTemplate\Tags\TagForm::class,
-            'style'=> \Ncf\ShopifyTemplate\Tags\TagStyle::class,
+            'form' => \ShopifyTemplate\Tags\TagForm::class,
+            'style' => \ShopifyTemplate\Tags\TagStyle::class,
         ]);
     }
-
-    
 }

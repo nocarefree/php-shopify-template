@@ -9,14 +9,14 @@
  * @package Liquid
  */
 
-namespace ShopifyLiquid\Tags;
+namespace ShopifyTemplate\Tags;
 
 use Liquid\Nodes\Node;
 use Liquid\Context;
 use Liquid\Environment;
 use Liquid\Parser;
 use Liquid\TokenStream;
-use Ncf\ShopifyTemplate\Theme;
+use ShopifyTemplate\Theme;
 
 class TagRender extends Node
 {

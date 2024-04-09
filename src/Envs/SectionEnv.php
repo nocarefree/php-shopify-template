@@ -1,9 +1,10 @@
-<?php 
+<?php
 
-namespace Ncf\ShopifyTemplate\Envs;
+namespace ShopifyTemplate\Envs;
 
 
-class SectionEnv extends BaseEnv{
+class SectionEnv extends BaseEnv
+{
 
     public function __construct($fileSystem = null)
     {
@@ -12,16 +13,15 @@ class SectionEnv extends BaseEnv{
         $this->registerTags(static::getInnerTags());
     }
 
-    public static function getInnerTags(){
+    public static function getInnerTags()
+    {
         return [
             //Config
-            'schema'=> \Ncf\ShopifyTemplate\Tags\TagSchema::class,
-            
+            'schema' => \ShopifyTemplate\Tags\TagSchema::class,
+
             //section template
-            'javascript'=> \Ncf\ShopifyTemplate\Tags\TagJavascript::class,
-            'stylesheet'=> \Ncf\ShopifyTemplate\Tags\TagStylesheet::class,
+            'javascript' => \ShopifyTemplate\Tags\TagJavascript::class,
+            'stylesheet' => \ShopifyTemplate\Tags\TagStylesheet::class,
         ];
     }
-
-    
 }

@@ -1,15 +1,16 @@
-<?php 
+<?php
 
-namespace Ncf\ShopifyTemplate;
+namespace ShopifyTemplate;
 
 use Illuminate\Support\Str;
 use Liquid\LiquidException;
 
-class ThemeInstall{
+class ThemeInstall
+{
 
     function __construct($path)
     {
-        $this->disk = new FileSystem($path); 
+        $this->disk = new FileSystem($path);
 
         $this->env = new Envs\BaseEnv;
         $this->sectionEnv = new Envs\SectionEnv;
@@ -22,18 +23,20 @@ class ThemeInstall{
         $this->files = [];
     }
 
-    protected function getTypeName($file, $path){
-        if(Str::startsWith($file, $path.'/')){
-            return Str::after($file, $path.'/');
+    protected function getTypeName($file, $path)
+    {
+        if (Str::startsWith($file, $path . '/')) {
+            return Str::after($file, $path . '/');
         }
         return null;
     }
 
-    protected function getLayout($file){
-        if(preg_match('/^'.Theme::PATH_LAYOUT.'\/([\w\._\-\s]+)\.liquid$/', $file, $matches)){
+    protected function getLayout($file)
+    {
+        if (preg_match('/^' . Theme::PATH_LAYOUT . '\/([\w\._\-\s]+)\.liquid$/', $file, $matches)) {
             $name = $matches[1];
             $content = $this->disk->get($file);
-            try{
+            try {
                 $this->files[] = [
                     'name' => $name,
                     'path' => Theme::PATH_LAYOUT,
@@ -41,18 +44,19 @@ class ThemeInstall{
                     'node' => $this->layoutEnv->parse($content),
                 ];
                 return true;
-            }catch(LiquidException $e){ 
+            } catch (LiquidException $e) {
                 return null;
             }
         }
         return null;
     }
 
-    protected function getSection($file){
-        if(preg_match('/^'.Theme::PATH_SECTION.'\/([\w\._\-\s]+)\.liquid$/', $file, $matches)){
+    protected function getSection($file)
+    {
+        if (preg_match('/^' . Theme::PATH_SECTION . '\/([\w\._\-\s]+)\.liquid$/', $file, $matches)) {
             $name = $matches[1];
             $content = $this->disk->get($file);
-            try{
+            try {
                 $this->files[] = [
                     'name' => $name,
                     'path' => Theme::PATH_SECTION,
@@ -60,26 +64,27 @@ class ThemeInstall{
                     'node' => $this->sectionEnv->parse($content),
                 ];
                 return true;
-            }catch(LiquidException $e){
+            } catch (LiquidException $e) {
                 return null;
             }
         }
         return null;
     }
 
-    protected function getTemplate($file){
-        if(
-            preg_match('/^'.Theme::PATH_TEMPLATE.'\/([\w\._\-\s]+)\.(liquid|json)$/', $file, $matches) 
-            || preg_match('/^'.Theme::PATH_TEMPLATE.'\/(customers\/[\w\._\-\s]+)\.(liquid|json)$/', $file, $matches)
-        ){
+    protected function getTemplate($file)
+    {
+        if (
+            preg_match('/^' . Theme::PATH_TEMPLATE . '\/([\w\._\-\s]+)\.(liquid|json)$/', $file, $matches)
+            || preg_match('/^' . Theme::PATH_TEMPLATE . '\/(customers\/[\w\._\-\s]+)\.(liquid|json)$/', $file, $matches)
+        ) {
             $name = $matches[1];
             $content = $this->disk->get($file);
 
-            try{
+            try {
 
-                if($matches[2] == 'json'){
+                if ($matches[2] == 'json') {
                     $node = json_decode($content, true);
-                }else{
+                } else {
                     $node = $this->env->parse($content);
                 }
 
@@ -91,18 +96,19 @@ class ThemeInstall{
                     'node' => $node,
                 ];
                 return true;
-            }catch(LiquidException $e){
+            } catch (LiquidException $e) {
                 return null;
             }
         }
         return null;
     }
 
-    protected function getSnippet($file){
-        if(preg_match('/^'.Theme::PATH_SNIPPET.'\/([\w\._\-\s]+)\.liquid$/', $file, $matches)){
+    protected function getSnippet($file)
+    {
+        if (preg_match('/^' . Theme::PATH_SNIPPET . '\/([\w\._\-\s]+)\.liquid$/', $file, $matches)) {
             $name = $matches[1];
             $content = $this->disk->get($file);
-            try{
+            try {
                 $this->files[] = [
                     'name' => $name,
                     'path' => Theme::PATH_SNIPPET,
@@ -110,18 +116,19 @@ class ThemeInstall{
                     'node' => $this->sectionEnv->parse($content),
                 ];
                 return true;
-            }catch(LiquidException $e){
+            } catch (LiquidException $e) {
                 return null;
             }
         }
         return null;
     }
 
-    protected function getConfig($file){
-        if( preg_match('/^'.Theme::PATH_CONFIG .'\/(settings_data|settings_schema)\.json$/',$file, $matches) ){
+    protected function getConfig($file)
+    {
+        if (preg_match('/^' . Theme::PATH_CONFIG . '\/(settings_data|settings_schema)\.json$/', $file, $matches)) {
             $name = $matches[1];
             $content = $this->disk->get($file);
-            try{
+            try {
                 $this->files[] = [
                     'name' => $name,
                     'path' => Theme::PATH_CONFIG,
@@ -129,7 +136,7 @@ class ThemeInstall{
                     'node' => json_decode($content, true),
                 ];
                 return true;
-            }catch(LiquidException $e){
+            } catch (LiquidException $e) {
                 return null;
             }
             return null;
@@ -137,11 +144,12 @@ class ThemeInstall{
         return null;
     }
 
-    protected function getLocale($file){
-        if( preg_match('/^'.Theme::PATH_LOCALE .'\/([\w\._\-\s]+)\.json$/',$file, $matches) ){
+    protected function getLocale($file)
+    {
+        if (preg_match('/^' . Theme::PATH_LOCALE . '\/([\w\._\-\s]+)\.json$/', $file, $matches)) {
             $name = $matches[1];
             $content = $this->disk->get($file);
-            try{
+            try {
                 $this->files[] = [
                     'name' => $name,
                     'path' => Theme::PATH_LOCALE,
@@ -149,7 +157,7 @@ class ThemeInstall{
                     'node' => json_decode($content, true),
                 ];
                 return true;
-            }catch(LiquidException $e){
+            } catch (LiquidException $e) {
                 return null;
             }
             return null;
@@ -157,8 +165,9 @@ class ThemeInstall{
         return null;
     }
 
-    protected function getAsset($file){
-        if(preg_match('/^'.Theme::PATH_ASSET.'\/[\w\._\-\s]+\.(js|css|jpg|jpeg|gif|png|json|woff)$/', $file)){
+    protected function getAsset($file)
+    {
+        if (preg_match('/^' . Theme::PATH_ASSET . '\/[\w\._\-\s]+\.(js|css|jpg|jpeg|gif|png|json|woff)$/', $file)) {
             $this->files[] = [
                 'name' => $file,
                 'path' => Theme::PATH_ASSET,
@@ -169,24 +178,26 @@ class ThemeInstall{
         return null;
     }
 
-    public function run() {
+    public function run()
+    {
         $this->files = [];
 
-        $files = $this->disk->getAllFiles('',3);
+        $files = $this->disk->getAllFiles('', 3);
 
-        $checkFunctions = ['layout','section','template','snippet','config','locale','asset'];
+        $checkFunctions = ['layout', 'section', 'template', 'snippet', 'config', 'locale', 'asset'];
 
-        foreach($files as $key=>$file){
-            foreach($checkFunctions as $fun){
-                if($this->{'get'.ucfirst($fun)}($file)){
+        foreach ($files as $key => $file) {
+            foreach ($checkFunctions as $fun) {
+                if ($this->{'get' . ucfirst($fun)}($file)) {
                     unset($files[$key]);
                     break;
                 }
             }
         }
-	}
+    }
 
-    public function getFiles(){
+    public function getFiles()
+    {
         return $this->files;
     }
 }

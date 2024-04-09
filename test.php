@@ -6,6 +6,12 @@ use Liquid\Liquid;
 use Liquid\Parser;
 
 
+
+//$theme = new ShopifyTemplate\Theme();
+
+
+
+
 // $str = "'2342\'sdf'";
 // $reg = new Regexp('/"([^#"\\\\]*(?:\\\\.[^#"\\\\]*)*)"|\'([^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'/As');
 // $reg->match($str);
@@ -24,8 +30,12 @@ use Liquid\Parser;
 
 
 
+
+
 $server = (new ShopifyTemplate\ThemeArchitecture());
 $server->loadLocalFiles(__DIR__ . '/test/templates/spotlight');
+
+$server->render('index', $data);
 
 exit;
 
