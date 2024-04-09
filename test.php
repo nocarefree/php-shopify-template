@@ -6,6 +6,9 @@ use Liquid\Liquid;
 use Liquid\Parser;
 
 
+var_dump((new \Liquid\TokenStream(file_get_contents(__DIR__ . "/test/templates/crave/sections/header.liquid")))->tokens());
+exit;
+
 
 //$theme = new ShopifyTemplate\Theme();
 

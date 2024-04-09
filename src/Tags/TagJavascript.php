@@ -4,16 +4,10 @@
 
 namespace ShopifyTemplate\Tags;
 
-use Liquid\Nodes\Block;
-use Liquid\Context;
+
+use ShopifyTemplate\Nodes\SectionAttributeNode;
 
 
 class TagJavascript extends SectionAttributeNode
 {
-
-    public function render(Context $context)
-    {
-        $context->registers['javascript'] = parent::render($context);
-        return '';
-    }
 }

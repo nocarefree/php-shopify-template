@@ -3,7 +3,7 @@
 namespace ShopifyTemplate;
 
 use Exception;
-use Liquid\LiquidException;
+use Liquid\Context;
 use Liquid\FileSystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\FileAttributes;
@@ -55,13 +55,20 @@ class ThemeArchitecture
         if (isset($this->structures["templates/$name/.liquid"])) {
             $layout = $this->structures["templates/$name/.liquid"];
         } else {
+
+            $contentForLayout = '';
             $template = $this->structures["templates/$name/.json"] ?? $this->structures["templates/404.json"];
 
+            foreach ($template['order'] as $sectionId) {
+                $contentForLayout .= $this->renderSection($sectionId, $template['sections'][$sectionId]);
+            }
+
+            $this->context->assign('content_for_layout', $contentForLayout);
             $layout = isset($template['layout']) &&  isset($this->structures['layout/' . $template['layout'] . '.liquid']) ?
                 $this->structures['layout/' . $template['layout'] . '.liquid'] : $this->structures['layout/theme.liquid'];
         }
 
-        $layout->render();
+        $layout->render($this->context);
     }
 
     private function renderSectionGroup($group)
@@ -73,11 +80,13 @@ class ThemeArchitecture
         return implode("", $content);
     }
 
-    private function renderSection($name, $config = [])
+    private function renderSection($id, $config = [])
     {
+        $name = $config['type'];
+        $config['id'] = $id;
         if (isset($this->structures["sections/$name/.liquid"])) {
             $section = $this->structures["sections/$name/.liquid"] ?? '';
-            $context = $this->context->merge(['section' => new Drops\SectionDrop($config)], true);
+            $context = $this->context->push(['section' => new Drops\SectionDrop($config)], true);
 
             return $section->render($context);
         } else if (isset($this->structures["sections/$name/.json"])) {
