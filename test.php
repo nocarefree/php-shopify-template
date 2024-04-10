@@ -6,7 +6,11 @@ use Liquid\Liquid;
 use Liquid\Parser;
 
 
-var_dump((new \Liquid\TokenStream(file_get_contents(__DIR__ . "/test/templates/crave/sections/header.liquid")))->tokens());
+
+$server = (new ShopifyTemplate\ThemeArchitecture());
+$server->loadLocalFiles(__DIR__ . '/test/templates/spotlight');
+echo $server->render('index', []);
+
 exit;
 
 
@@ -32,15 +36,6 @@ exit;
 
 
 
-
-
-
-$server = (new ShopifyTemplate\ThemeArchitecture());
-$server->loadLocalFiles(__DIR__ . '/test/templates/spotlight');
-
-$server->render('index', $data);
-
-exit;
 
 
 

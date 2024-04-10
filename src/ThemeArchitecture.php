@@ -45,27 +45,38 @@ class ThemeArchitecture
             Filters\FilterUrl::class
         ]);
 
+        $this->liquid->registerTags([
+            'form' => Tags\TagForm::class,
+            'paginate' => Tags\TagPaginate::class,
+            'layout' => Tags\TagLayout::class,
+            'render' => Tags\TagRender::class,
+            'section' => Tags\TagSection::class,
+            'style' => Tags\TagStyle::class,
+
+            'javascript' => Tags\TagJavascript::class,
+            'stylesheet' => Tags\TagStylesheet::class,
+            'schema' => Tags\TagSchema::class,
+        ]);
 
         $this->schemaMap = include(__DIR__ . '/schema.php');
     }
 
     public function render($name, $data)
     {
-        $this->context = new Context($data);
+        $this->context = new Context($this->liquid, $data);
         if (isset($this->structures["templates/$name/.liquid"])) {
             $layout = $this->structures["templates/$name/.liquid"];
         } else {
-
             $contentForLayout = '';
             $template = $this->structures["templates/$name/.json"] ?? $this->structures["templates/404.json"];
 
-            foreach ($template['order'] as $sectionId) {
-                $contentForLayout .= $this->renderSection($sectionId, $template['sections'][$sectionId]);
+            foreach ($template->order as $sectionId) {
+                $contentForLayout .= $this->renderSection($sectionId, $template->sections->{$sectionId});
             }
 
             $this->context->assign('content_for_layout', $contentForLayout);
-            $layout = isset($template['layout']) &&  isset($this->structures['layout/' . $template['layout'] . '.liquid']) ?
-                $this->structures['layout/' . $template['layout'] . '.liquid'] : $this->structures['layout/theme.liquid'];
+            $layout = property_exists($template, 'layout') && isset($this->structures['layout/' . $template->layout . '.liquid']) ?
+                $this->structures['layout/' . $template->layout . '.liquid'] : $this->structures['layout/theme.liquid'];
         }
 
         $layout->render($this->context);
@@ -80,10 +91,10 @@ class ThemeArchitecture
         return implode("", $content);
     }
 
-    private function renderSection($id, $config = [])
+    private function renderSection($id, \stdClass $config)
     {
-        $name = $config['type'];
-        $config['id'] = $id;
+        $name = $config->type;
+        $config->id = $id;
         if (isset($this->structures["sections/$name/.liquid"])) {
             $section = $this->structures["sections/$name/.liquid"] ?? '';
             $context = $this->context->push(['section' => new Drops\SectionDrop($config)], true);
@@ -111,8 +122,6 @@ class ThemeArchitecture
                         $errors[] = ("Missing {{content_for_layout}} in the content section of the template");
                     }
                     break;
-                case 'sections':
-                    break;
                 default:
                     break;
             }
@@ -121,6 +130,15 @@ class ThemeArchitecture
                 $content->parse();
             } catch (\Exception $e) {
                 $errors[] = $e;
+            }
+
+            if ($type == 'sections') {
+                foreach ($content->getNodelist() as $node) {
+                    $name = $node->getName();
+                    if (in_array($name, ['javascript', 'stylesheet', 'schema'])) {
+                        $this->addSectionInner($name, (string)$node);
+                    }
+                }
             }
         } else {
             try {
@@ -142,21 +160,29 @@ class ThemeArchitecture
     {
         $this->fileSystem = new FileSystem(new LocalFilesystemAdapter($dir));
 
-        $this->structures = [
-            ...$this->getAssets(),
-            ...$this->getConfig(),
-            ...$this->getLayout(),
-            ...$this->getLocales(),
-            ...$this->getSections(),
-            ...$this->getSnippets(),
-            ...$this->getTemplates(),
-        ];
+        $files = array_merge(
+            $this->getAssets(),
+            $this->getConfig(),
+            $this->getLayout(),
+            $this->getLocales(),
+            $this->getSections(),
+            $this->getSnippets(),
+            $this->getTemplates()
+        );
 
-        foreach ($this->structures as $value) {
+        foreach ($files as $value) {
             if (Str::endsWith($value, ['.liquid', '.json'])) {
-                $this->checkFile($value, $this->fileSystem->read($value));
+                $content = $this->fileSystem->read($value);
+                $this->checkFile($value, $content);
+                $this->structures[$value] = $content;
+            } else {
+                $this->structures[$value] = $value;
             }
         }
+    }
+
+    public function addSectionInner($name, $content)
+    {
     }
 
     private function getAssets()
@@ -212,8 +238,6 @@ class ThemeArchitecture
         foreach ($files as $file) {
             $path = $file->path();
             if ($file instanceof FileAttributes && Str::endsWith($path, '.liquid')) {
-                //$content = $this->fileSystem->read($path);
-                //$this->checkFile($path, $content);
                 $data[] = $file->path();
             }
         }
@@ -314,9 +338,6 @@ class ThemeArchitecture
         }
         return !empty($json) ? $json : [];
     }
-
-
-
 
 
     public function verifyJson($content)

@@ -14,7 +14,7 @@ namespace ShopifyTemplate\Nodes;
 use Liquid\Tags\TagComment;
 use Liquid\Environment;
 
-class SectionAttributeNode extends TagComment
+class InSectionTopNode extends TagComment
 {
     public function parse()
     {
@@ -25,5 +25,10 @@ class SectionAttributeNode extends TagComment
         }
 
         parent::parse();
+    }
+
+    public function __toString(): string
+    {
+        return implode("", $this->nodelist);
     }
 }

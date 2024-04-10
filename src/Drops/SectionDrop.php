@@ -7,8 +7,8 @@ use ShopifyTemplate\Nodes\SectionAttributeNode;
 class SectionDrop extends \Liquid\Models\Drop
 {
 
-    function __construct(array $attributes = [])
+    function __construct(\stdClass | array $section)
     {
-        $this->attributes = $attributes;
+        $this->attributes = is_object($section) ? json_decode(json_encode($section), true) : $section;
     }
 }

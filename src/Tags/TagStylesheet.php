@@ -4,8 +4,8 @@
 
 namespace ShopifyTemplate\Tags;
 
-use ShopifyTemplate\Nodes\SectionAttributeNode;
+use ShopifyTemplate\Nodes\InSectionTopNode;
 
-class TagStylesheet extends SectionAttributeNode
+class TagStylesheet extends InSectionTopNode
 {
 }

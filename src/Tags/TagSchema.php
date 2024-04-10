@@ -11,16 +11,8 @@
 
 namespace ShopifyTemplate\Tags;
 
-use ShopifyTemplate\Nodes\SectionAttributeNode;
+use ShopifyTemplate\Nodes\InSectionTopNode;
 
-class TagSchema extends SectionAttributeNode
+class TagSchema extends InSectionTopNode
 {
-<<<<<<< HEAD
-    public function render(Context $context)
-    {
-        return '';
-    }
-=======
-
->>>>>>> 7cd1322d617f0c921f627129d76e9edb3559ccfe
 }

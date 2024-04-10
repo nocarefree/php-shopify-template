@@ -5,9 +5,9 @@
 namespace ShopifyTemplate\Tags;
 
 
-use ShopifyTemplate\Nodes\SectionAttributeNode;
+use ShopifyTemplate\Nodes\InSectionTopNode;
 
 
-class TagJavascript extends SectionAttributeNode
+class TagJavascript extends InSectionTopNode
 {
 }
