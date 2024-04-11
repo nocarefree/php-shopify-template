@@ -79,7 +79,8 @@ class ThemeArchitecture
                 $this->structures['layout/' . $template->layout . '.liquid'] : $this->structures['layout/theme.liquid'];
         }
 
-        $layout->render($this->context);
+        var_dump($layout);
+        return $layout->render($this->context);
     }
 
     private function renderSectionGroup($group)
@@ -127,22 +128,17 @@ class ThemeArchitecture
             }
 
             try {
-                $document = $this->liquid->parse($content);
+                $content = $this->liquid->parse($content);
 
                 if ($type == 'sections') {
-                    foreach ($document->nodes as $node) {
-                        if (!$node) {
-                            var_dump($content, $document->nodes, $node);
-                            exit;
-                        }
-
+                    foreach ($content->nodes as $node) {
                         if (is_object($node) && in_array($node->name, ['javascript', 'stylesheet', 'schema'])) {
                             $this->addSectionInner($node->name, (string)$node);
                         }
                     }
                 }
             } catch (\Exception $e) {
-                $errors[] = $e;
+                $errors[] = $e->getMessage();
             }
         } else {
             try {
@@ -177,7 +173,10 @@ class ThemeArchitecture
         foreach ($files as $value) {
             if (Str::endsWith($value, ['.liquid', '.json'])) {
                 $content = $this->fileSystem->read($value);
-                $this->checkFile($value, $content);
+                $errors = $this->checkFile($value, $content);
+                if ($errors) {
+                    throw new \Exception($value . '-' . json_encode($errors));
+                }
                 $this->structures[$value] = $content;
             } else {
                 $this->structures[$value] = $value;
