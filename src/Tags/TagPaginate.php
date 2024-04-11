@@ -29,7 +29,7 @@ class TagPaginate extends Block
 				$this->window_size = $matches[0];
 			}
 		} else {
-			throw new SyntaxError("Invalid liquid syntax");
+			throw new SyntaxError("in tag 'paginate' - Valid syntax: paginate [collection] by number");
 		}
 		parent::parse($stream);
 		return $this;

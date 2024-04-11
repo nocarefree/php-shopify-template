@@ -54,7 +54,7 @@ class TagForm extends Block
 			$this->form_type = $matches[1] ?: $matches[2];
 			$this->formArgs = preg_split('#\s?,\s?#', substr($this->expression, strlen($matches[0]), -1), -1, PREG_SPLIT_NO_EMPTY);
 		} else {
-			throw new SyntaxError("Invalid liquid syntax");
+			$this->throwEmptyExpression("in 'form' - Valid syntax: form 'type'[, object]");
 		}
 
 		parent::parse($stream);

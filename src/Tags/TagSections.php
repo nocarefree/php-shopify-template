@@ -18,7 +18,7 @@ use Liquid\TokenStream;
 use Liquid\Parser;
 use Liquid\Exceptions\SyntaxError;
 
-class TagSection extends Node
+class TagSections extends Node
 {
 
 	function parse(TokenStream $stream)
@@ -40,6 +40,6 @@ class TagSection extends Node
 	 */
 	public function render(Context $context): string
 	{
-		return call_user_func([$context->env(), 'renderSection'], [$this->section]);
+		return call_user_func([$context->env(), 'renderSectionGroup'], [$this->section]);
 	}
 }

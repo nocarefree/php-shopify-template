@@ -3,13 +3,12 @@
 include(__DIR__ . "/vendor/autoload.php");
 
 use Liquid\Liquid;
-use Liquid\Parser;
-
-
+use Liquid\Context;
 
 $server = (new ShopifyTemplate\ThemeArchitecture());
-$server->loadLocalFiles(__DIR__ . '/test/templates/spotlight');
-echo $server->render('index', []);
+$server->install(__DIR__ . '/test/templates/spotlight');
+
+echo $server->renderTemplate('index', []);
 
 exit;
 
