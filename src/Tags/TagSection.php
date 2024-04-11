@@ -12,18 +12,23 @@
 namespace ShopifyTemplate\Tags;
 
 use Liquid\Nodes\Node;
+use Liquid\Nodes\Document;
 use Liquid\Context;
-use Liquid\Environment;
-use Liquid\Parser;
 use Liquid\TokenStream;
+use Liquid\Parser;
+use Liquid\Exceptions\SyntaxError;
 
 class TagSection extends Node
 {
 
-	function parse()
+	function parse(TokenStream $stream)
 	{
-		parent::parse();
-		$this->options['file']['path'] = ShopifyTemplate::PATH_SECTION;
+		if (preg_match(Parser::REGEX_STRING, $this->expression, $matches)) {
+			$this->section = $matches[1] ?: $matches[2];
+		} else {
+			throw new SyntaxError("<!-- Syntax error in tag 'section' - Section name must be a quoted string -->");
+		}
+		return $this;
 	}
 
 	/**
@@ -33,28 +38,14 @@ class TagSection extends Node
 	 *
 	 * @return string
 	 */
-	public function render(Context $context)
+	public function render(Context $context): string
 	{
-		if (isset($context->registers['in_section']) && $context->registers['in_section']) {
-			return '';
+		$document = $context->env()->getCache($this->section);
+
+		if ($document && $document instanceof Document) {
+			return $document->render($context);
+		} else {
+			return "Error in tag 'section' - '" . "' is not a valid section type";
 		}
-
-		$name = $context->get($this->options['file']['name']);
-
-		$this->options['parameters'] = [
-			'section' => 'settings.sections.' . $name,
-		];
-
-		$result = parent::render($context);
-
-		$context->registers['headers'][$name] = [
-			'stylesheet' => $context->registers['stylesheet'] ?? '',
-			'javascript' => $context->registers['javascript'] ?? ''
-		];
-
-		unset($context->registers['stylesheet']);
-		unset($context->registers['javascript']);
-
-		return $result;
 	}
 }

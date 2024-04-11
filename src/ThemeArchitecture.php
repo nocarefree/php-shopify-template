@@ -125,20 +125,24 @@ class ThemeArchitecture
                 default:
                     break;
             }
-            $content = $this->liquid->loadString($content);
-            try {
-                $content->parse();
-            } catch (\Exception $e) {
-                $errors[] = $e;
-            }
 
-            if ($type == 'sections') {
-                foreach ($content->getNodelist() as $node) {
-                    $name = $node->getName();
-                    if (in_array($name, ['javascript', 'stylesheet', 'schema'])) {
-                        $this->addSectionInner($name, (string)$node);
+            try {
+                $document = $this->liquid->parse($content);
+
+                if ($type == 'sections') {
+                    foreach ($document->nodes as $node) {
+                        if (!$node) {
+                            var_dump($content, $document->nodes, $node);
+                            exit;
+                        }
+
+                        if (is_object($node) && in_array($node->name, ['javascript', 'stylesheet', 'schema'])) {
+                            $this->addSectionInner($node->name, (string)$node);
+                        }
                     }
                 }
+            } catch (\Exception $e) {
+                $errors[] = $e;
             }
         } else {
             try {
@@ -179,6 +183,10 @@ class ThemeArchitecture
                 $this->structures[$value] = $value;
             }
         }
+
+        $this->liquid->setCache($this->structures);
+
+        return $this;
     }
 
     public function addSectionInner($name, $content)

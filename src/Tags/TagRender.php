@@ -11,18 +11,27 @@
 
 namespace ShopifyTemplate\Tags;
 
-use Liquid\Nodes\Node;
+use Liquid\Tags\TagRender as BaseRender;
 use Liquid\Context;
-use Liquid\Environment;
+use Liquid\Nodes\Document;
 use Liquid\Parser;
 use Liquid\TokenStream;
 use ShopifyTemplate\Theme;
 
-class TagRender extends Node
+class TagRender extends BaseRender
 {
-	function parse()
+	public function parseDocument($stream)
 	{
-		parent::parse();
-		$this->options['file']['path'] = ShopifyTemplate::PATH_SNIPPET;
+	}
+
+	public function render(Context $context): string
+	{
+		$this->document = $context->env()->getCache($this->render);
+
+		if ($this->document && $this->document instanceof Document) {
+			return parent::render($context);
+		} else {
+			return "Liquid error: Could not find {" . $this->render . "}.liquid";
+		}
 	}
 }

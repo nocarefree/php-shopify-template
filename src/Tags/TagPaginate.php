@@ -11,24 +11,48 @@
 
 namespace ShopifyTemplate\Tags;
 
-use Liquid\Nodes\Block;
 use Liquid\Context;
-use Liquid\Environment;
+use Liquid\Nodes\Block;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\Parser;
-
+use Liquid\TokenStream;
 
 class TagPaginate extends Block
 {
-	public function parse()
+	public function parse(TokenStream $stream)
 	{
-		$index = 0;
-		if (preg_match(Parser::REGEX_VAR, $this->expression, $matches, 0, $index)) {
-			$this->options['arr'] =  $matches[0];
-			$index = strlen($matches[0]);
 
-			if (preg_match('/\s?by (.*)/', $this->expression, $matches)) {
-				$this->options['by'] =  $matches[1];
+		if (preg_match(Parser::REGEX_VAR, $this->expression, $matches)) {
+			$this->drop = $matches[0];
+
+			if (preg_match('#[\s,]+window_size[\s]?:[\s]?(\d)[\s,]#', $this->expression, $matches)) {
+				$this->window_size = $matches[0];
 			}
+		} else {
+			throw new SyntaxError("Invalid liquid syntax");
 		}
+		parent::parse($stream);
+		return $this;
+	}
+
+	public function render(Context $context): string
+	{
+		if (!in_array($this->drop, [
+			'all_products',
+			'article.comments',
+			'blog.articles',
+			'collections',
+			'collection.products',
+			'customer.addresses',
+			'customer.orders',
+			'pages',
+			'search.results',
+			'collection_list settings',
+			'product_list settings'
+		])) {
+			return "Array '" . $this->drop . "' is not paginateable.";
+		}
+
+		return parent::render($context);
 	}
 }

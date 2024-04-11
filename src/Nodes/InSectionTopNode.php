@@ -13,22 +13,24 @@ namespace ShopifyTemplate\Nodes;
 
 use Liquid\Tags\TagComment;
 use Liquid\Environment;
+use Liquid\Exceptions\SyntaxError;
+use Liquid\TokenStream;
 
 class InSectionTopNode extends TagComment
 {
-    public function parse()
+    public function parse(TokenStream $stream)
     {
-        if ($this->stream->depth() > 1) {
-            $name = $this->getName();
-            $line = $this->stream->lineNo();
-            $this->env->addSyntaxError("Liquid syntax error (line {$line}): '{$name}' tag must not be nested inside other tags");
+        if ($stream->depth() > 1) {
+            $name = $this->name;
+            throw new SyntaxError("'{$name}' tag must not be nested inside other tags");
         }
 
-        parent::parse();
+        parent::parse($stream);
+        return $this;
     }
 
     public function __toString(): string
     {
-        return implode("", $this->nodelist);
+        return $this->nodes ? implode("", $this->nodes) : '';
     }
 }

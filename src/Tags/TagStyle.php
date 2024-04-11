@@ -19,7 +19,7 @@ use Liquid\Context;
 class TagStyle extends Block
 {
 
-	public function render(Context $context)
+	public function render(Context $context): string
 	{
 		return "<style>" . parent::render($context) . "<style>";
 	}
