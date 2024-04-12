@@ -188,7 +188,7 @@ class LocalThemeFiles
     private function getSnippets()
     {
         $data = [];
-        $files = $this->fileSystem->listContents('layout', 1);
+        $files = $this->fileSystem->listContents('snippets', 1);
         foreach ($files as $file) {
             if ($file instanceof FileAttributes && Str::endsWith($file->path(), '.liquid')) {
                 $data[] = $file->path();

@@ -45,6 +45,6 @@ class TagSections extends Node
 			return "<!-- Syntax error in tag 'section' - Section name must be a quoted string -->";
 		}
 
-		return call_user_func([$context->env(), 'renderSectionGroup'], [$this->section]);
+		return call_user_func_array([$context->env(), 'renderSectionGroup'], [$this->section]);
 	}
 }

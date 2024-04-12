@@ -44,13 +44,16 @@ class TagRender extends Node
 		} else if (preg_match(Parser::REGEX_VAR, $this->expression, $matches)) {
 			$this->render = $matches[0];
 		} else {
-			$this->throwEmptyExpression("<!-- Syntax error in tag 'render' - Template name must be a quoted string -->");
+			$stream->addSyntaxError("Syntax error in tag 'render' - Template name must be a quoted string");
 		}
 		return $this;
 	}
 
 	public function render(Context $context): string
 	{
+		if (!$this->render) {
+			return "<!-- Syntax error in tag 'render' - Template name must be a quoted string -->";
+		}
 
 
 		$result = '';
@@ -66,8 +69,8 @@ class TagRender extends Node
 			$context->push();
 			$data = [];
 			if (isset($this->parameters)) {
-				foreach ($this->options['parameters'] as $value) {
-					$data[$value[0]] = $value[1];
+				foreach ($this->parameters as $key => $value) {
+					$data[$key] = $context->get($value[1]);
 				}
 			}
 

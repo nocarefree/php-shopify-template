@@ -79,18 +79,18 @@ class ThemeArchitecture extends Liquid
             }
 
             $layoutName = property_exists($template, 'layout') ? $template->layout : 'theme';
-            $layout = $this->file("layout/$layoutName.liquid");
+            $layoutFile = $this->file("layout/$layoutName.liquid");
+            $layout = $layoutFile['value'];
         }
         return $layout->render($this->context);
     }
 
-    public function renderSectionGroup($name)
+    public function renderSectionGroup(string $name)
     {
-        if ($file = $this->file("sections/$name/.json")) {
+        if (!empty($file = $this->file("sections/$name.json"))) {
             $group = $file['value'];
             $content = '';
-            var_dump($group);
-            foreach ($group['order'] as $key) {
+            foreach ($group->order as $key) {
                 $content .= $this->renderSection($group->sections->{$key}, $key);
             }
             return $content;
@@ -120,7 +120,8 @@ class ThemeArchitecture extends Liquid
 
     public function renderSnippet($name, $args = [])
     {
-        if ($file = $this->file("snippets/$name.liquid")) {
+        $file = $this->file("snippets/$name.liquid");
+        if ($file) {
             $context = $this->context->clone($args);
             return $file['value']->render($context);
         } else {
