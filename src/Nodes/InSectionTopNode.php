@@ -20,9 +20,11 @@ class InSectionTopNode extends TagComment
 {
     public function parse(TokenStream $stream)
     {
+        $this->inside = false;
         if ($stream->depth() > 1) {
             $name = $this->name;
-            throw new SyntaxError("'{$name}' tag must not be nested inside other tags");
+            $stream->addSyntaxError("'{$name}' tag must not be nested inside other tags");
+            $this->inside = true;
         }
 
         parent::parse($stream);

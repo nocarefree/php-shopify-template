@@ -13,7 +13,6 @@ namespace ShopifyTemplate\Tags;
 
 use Liquid\Nodes\Block;
 use Liquid\Context;
-use Liquid\Exceptions\SyntaxError;
 use Liquid\Parser;
 use Liquid\TokenStream;
 
@@ -52,7 +51,7 @@ class TagForm extends Block
 
 		if (preg_match(Parser::REGEX_STRING, $this->expression, $matches)) {
 			$this->form_type = $matches[1] ?: $matches[2];
-			$this->formArgs = preg_split('#\s?,\s?#', substr($this->expression, strlen($matches[0]), -1), -1, PREG_SPLIT_NO_EMPTY);
+			$this->formArgs = preg_split('#\s?,\s?#', substr($this->expression, strlen($matches[0]), null), -1, PREG_SPLIT_NO_EMPTY);
 		} else {
 			$this->throwEmptyExpression("in 'form' - Valid syntax: form 'type'[, object]");
 		}

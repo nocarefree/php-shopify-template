@@ -5,12 +5,14 @@ namespace ShopifyTemplate;
 use Liquid\Context;
 use Liquid\FileSystem;
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 use Seld\JsonLint;
 
 use JsonSchema\SchemaStorage;
 use JsonSchema\Validator;
 use JsonSchema\Constraints\Factory;
 use Liquid\Liquid;
+use Liquid\Nodes\Document;
 use stdClass;
 
 class ThemeArchitecture extends Liquid
@@ -19,7 +21,7 @@ class ThemeArchitecture extends Liquid
     protected FileSystem $fileSystem;
     protected Liquid $liquid;
     protected Context $context;
-    protected array $structures = [];
+    protected array $files = [];
     protected array $errors = [];
     protected array $schemaValidator;
     protected array $schemaMap;
@@ -62,30 +64,34 @@ class ThemeArchitecture extends Liquid
     public function renderTemplate($name, $data)
     {
         $this->context = new Context($this, $data);
-        if (isset($this->structures["templates/$name/.liquid"])) {
-            $layout = $this->structures["templates/$name/.liquid"];
-        } else {
-            $contentForLayout = '';
-            $template = $this->structures["templates/$name/.json"] ?? $this->structures["templates/404.json"];
 
-            foreach ($template->order as $sectionId) {
-                $contentForLayout .= $this->renderSection($sectionId, $template->sections->{$sectionId});
+        if ($file = $this->file("templates/$name.liquid")) {
+            $layout = $file['value'];
+        } else {
+            $file = $this->file("templates/$name.json", "templates/404.json");
+            $contentForLayout = '';
+            if ($file) {
+                $template = $file['value'];
+
+                foreach ($template->order as $sectionId) {
+                    $contentForLayout .= $this->renderSection($template->sections->{$sectionId}, $sectionId);
+                }
             }
 
-            $this->context->assign('content_for_layout', $contentForLayout);
-            $layout = property_exists($template, 'layout') && isset($this->structures['layout/' . $template->layout . '.liquid']) ?
-                $this->structures['layout/' . $template->layout . '.liquid'] : $this->structures['layout/theme.liquid'];
+            $layoutName = property_exists($template, 'layout') ? $template->layout : 'theme';
+            $layout = $this->file("layout/$layoutName.liquid");
         }
         return $layout->render($this->context);
     }
 
     public function renderSectionGroup($name)
     {
-        if (isset($this->structures["sections/$name/.json"])) {
-            $group = $this->structures["sections/$name/.json"];
+        if ($file = $this->file("sections/$name/.json")) {
+            $group = $file['value'];
             $content = '';
+            var_dump($group);
             foreach ($group['order'] as $key) {
-                $content .= $this->renderSection($key, $group['sections'][$key]);
+                $content .= $this->renderSection($group->sections->{$key}, $key);
             }
             return $content;
         } else {
@@ -93,21 +99,34 @@ class ThemeArchitecture extends Liquid
         }
     }
 
-    public function renderSection($id, \stdClass $config)
+    public function renderSection($config, $id): string
     {
         $name = $config->type;
         $config->id = $id;
-        if (isset($this->structures["sections/$name/.liquid"])) {
-            $section = $this->structures["sections/$name/.liquid"] ?? '';
-            $context = $this->context->push(['section' => new Drops\SectionDrop($config)], true);
 
-            return $section->render($context);
+        $file = $this->file("sections/$name.liquid");
+        if ($file) {
+            if ($file['value'] instanceof Document) {
+                $context = $this->context->clone(['section' => new Drops\SectionDrop($config)]);
+                return $file['value']->render($context);
+            } else {
+                var_dump($file);
+                return $file['value'];
+            }
         } else {
             return "Liquid error: Error in tag 'section' - '" . $name . "' is not a valid section type";
         }
     }
 
-
+    public function renderSnippet($name, $args = [])
+    {
+        if ($file = $this->file("snippets/$name.liquid")) {
+            $context = $this->context->clone($args);
+            return $file['value']->render($context);
+        } else {
+            return "Liquid error: Could not find snippets/$name.liquid";
+        }
+    }
 
     public function addSectionInner()
     {
@@ -118,14 +137,15 @@ class ThemeArchitecture extends Liquid
         $local = new LocalThemeFiles($dir);
         $validator = new ContentValidator($this);
 
-        $data = $local->get();
+        $this->files = $local->get();
 
-        foreach ($data as $value => $content) {
-            if (Str::endsWith($value, ['.liquid', '.json'])) {
-                $validator->validate($value, $content);
-                $this->structures[$value] = $content;
-            } else {
-                $this->structures[$value] = $value;
+
+
+
+        foreach ($this->files as $index => $file) {
+            if (Str::endsWith($file['key'], ['.liquid', '.json'])) {
+                $validator->validate($file['key'], $file['value']);
+                $this->files[$index]['value'] = $file['value'];
             }
         }
 
@@ -136,8 +156,12 @@ class ThemeArchitecture extends Liquid
         return $this;
     }
 
-    public function structures()
+    public function file($name, $default = null)
     {
-        return $this->structures;
+        return Arr::first($this->files, function ($v) use ($name) {
+            return $v['key'] == $name;
+        }, $default ? Arr::first($this->files, function ($v) use ($default) {
+            return $v['key'] == $default;
+        }, null) : null);
     }
 }

@@ -39,19 +39,24 @@ class ContentValidator extends \Exception
                     break;
             }
 
-            try {
-                $content = $this->env->parse($content);
 
-                // if ($type == 'sections') {
-                //     foreach ($content->nodes as $node) {
-                //         if (is_object($node) && in_array($node->name, ['javascript', 'stylesheet', 'schema'])) {
-                //             $this->addSectionInner($node->name, (string)$node);
-                //         }
-                //     }
-                // }
-            } catch (\Exception $e) {
-                $errors[] = $e->getMessage();
+            $stream = new \Liquid\TokenStream($this->env, $content);
+            $content = $stream->parse();
+
+            if ($stream->syntaxError()->fails()) {
+                $errors = $stream->syntaxError()->errors();
             }
+
+
+
+            // if ($type == 'sections') {
+            //     foreach ($content->nodes as $node) {
+            //         if (is_object($node) && in_array($node->name, ['javascript', 'stylesheet', 'schema'])) {
+            //             $this->addSectionInner($node->name, (string)$node);
+            //         }
+            //     }
+            // }
+
         } else {
             try {
                 $data = $this->jsonDecode($content);
@@ -66,22 +71,24 @@ class ContentValidator extends \Exception
                 $content = [];
             }
         }
-        return $errors;
+        if ($errors) {
+            $this->errors[$path] = $errors;
+        }
     }
 
 
     private function jsonDecode($content)
     {
         $json = @json_decode($content);
-        if ($error = json_last_error()) {
+        if (json_last_error()) {
             $parser = new JsonLint\JsonParser();
             try {
                 $parser->parse($content, JsonLint\JsonParser::DETECT_KEY_CONFLICTS);
             } catch (JsonLint\DuplicateKeyException $e) {
                 $details = $e->getDetails();
-                throw new \Exception("Invalid JSON: unexpected token '" . $details['key'] . "' at line '" . $details['line'] . "', column 7");
+                throw new \Exception("Invalid JSON: unexpected token '" . $details['key'] . "' at line '" . $details['line'] . "'");
             }
-            throw new \Exception($error);
+            throw new \Exception(json_last_error_msg());
         }
         return !empty($json) ? $json : [];
     }
@@ -114,7 +121,7 @@ class ContentValidator extends \Exception
         }
 
         foreach ($sections as $id) {
-            if (!$this->hasSection($id)) {
+            if (!(bool)$this->env->file("sections/$id.liquid")) {
                 $errors[] = "Section type '$id' does not refer to an existing section file";
             }
         }
@@ -141,11 +148,6 @@ class ContentValidator extends \Exception
             }
         }
         return $errors;
-    }
-
-    public function hasSection($id)
-    {
-        return in_array("sections/$id.liquid", $this->env->structures());
     }
 
     public function fails()

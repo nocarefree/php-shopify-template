@@ -23,10 +23,11 @@ class TagSections extends Node
 
 	function parse(TokenStream $stream)
 	{
+		$this->section = null;
 		if (preg_match(Parser::REGEX_STRING, $this->expression, $matches)) {
 			$this->section = $matches[1] ?: $matches[2];
 		} else {
-			throw new SyntaxError("<!-- Syntax error in tag 'section' - Section name must be a quoted string -->");
+			$stream->addSyntaxError("Syntax error in tag 'section' - Section name must be a quoted string");
 		}
 		return $this;
 	}
@@ -40,6 +41,10 @@ class TagSections extends Node
 	 */
 	public function render(Context $context): string
 	{
+		if (!$this->section) {
+			return "<!-- Syntax error in tag 'section' - Section name must be a quoted string -->";
+		}
+
 		return call_user_func([$context->env(), 'renderSectionGroup'], [$this->section]);
 	}
 }

@@ -35,10 +35,13 @@ class LocalThemeFiles
 
         $data = [];
         foreach ($files as $path) {
-            if (Str::endsWith($path, ['.liquid', '.json']) && !Str::startsWith($path, "locale")) {
-                $data[$path] = $this->fileSystem->read($path);
+            if (Str::endsWith($path, ['.liquid', '.json'])) {
+                $data[] = [
+                    'key' => $path,
+                    'value' => $this->fileSystem->read($path)
+                ];
             } else {
-                $data[$path] = $path;
+                $data[] = ['key' => $path, 'value' => null];
             }
         }
         return $data;

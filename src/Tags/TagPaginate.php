@@ -22,6 +22,7 @@ class TagPaginate extends Block
 	public function parse(TokenStream $stream)
 	{
 
+		$this->drop = null;
 		if (preg_match(Parser::REGEX_VAR, $this->expression, $matches)) {
 			$this->drop = $matches[0];
 
@@ -29,7 +30,7 @@ class TagPaginate extends Block
 				$this->window_size = $matches[0];
 			}
 		} else {
-			throw new SyntaxError("in tag 'paginate' - Valid syntax: paginate [collection] by number");
+			$stream->addSyntaxError("in tag 'paginate' - Valid syntax: paginate [collection] by number");
 		}
 		parent::parse($stream);
 		return $this;
@@ -37,6 +38,11 @@ class TagPaginate extends Block
 
 	public function render(Context $context): string
 	{
+		if (empty($this->drop)) {
+			return "in tag 'paginate' - Valid syntax: paginate [collection] by number";
+		}
+
+
 		if (!in_array($this->drop, [
 			'all_products',
 			'article.comments',
