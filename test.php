@@ -4,11 +4,37 @@ include(__DIR__ . "/vendor/autoload.php");
 
 use Liquid\Liquid;
 use Liquid\Context;
+use Liquid\Models\Drop;
+
 
 $server = (new ShopifyTemplate\ThemeArchitecture());
 $server->install(__DIR__ . '/test/templates/spotlight');
 
-echo $server->renderTemplate('index', []);
+
+
+$shop_locale = new Drop([
+    "endonym_name" => "English",
+    "iso_code" => "en",
+    "name" => "English",
+    "primary" => true,
+    "root_url" => "/"
+]);
+
+$request = new Drop([
+    "design_mode" => false,
+    "host" => "test.com",
+    "locale" => $shop_locale,
+    "origin" => "https://test.com",
+    "page_type" => "index",
+    "path" => "/",
+    "visual_preview_mode" => false
+]);
+
+
+echo $server->renderTemplate('index', [
+    'request' => $request,
+    'canonical_url' => $request->origin . $request->path,
+]);
 
 exit;
 
