@@ -16,6 +16,7 @@ class Font extends \Liquid\Models\Drop
     function __construct($handle)
     {
         $this->attributes = static::getFont($handle);
+        var_dump($this->attributes);
     }
 
     static function getFont($handle)

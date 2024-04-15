@@ -2,13 +2,17 @@
 
 namespace ShopifyTemplate\Drops;
 
-class ColorSchema extends \Liquid\Models\Drop
+class ColorScheme extends \Liquid\Models\Drop
 {
 
-    function __construct($values)
+    function __construct($config)
     {
-        foreach ($values as $key => $value) {
-            $this->attributes[$key] = new Color($value);
+        foreach ($config['definition'] as $value) {
+            $id = $value["id"];
+
+            $color = $config['setting']['id'] ?? $value['default'] ?? null;
+
+            $this->attributes[$id] = $color ? new Color($color) : null;
         }
     }
 

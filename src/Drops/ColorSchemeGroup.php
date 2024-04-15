@@ -4,7 +4,7 @@ namespace ShopifyTemplate\Drops;
 
 use IteratorIterator;
 
-class ColorSchemaGroup extends \Liquid\Models\Drop
+class ColorSchemeGroup extends \Liquid\Models\Drop
 {
     protected $schemes;
 
@@ -15,8 +15,9 @@ class ColorSchemaGroup extends \Liquid\Models\Drop
             throw new \Exception("definition empty");
         }
 
-        foreach ($definition as $id => $value) {
-            $this->schemes[$id] = new ColorSchema(['id' => $id, 'setting' => $value['settings']]);
+        foreach ($config['setting'] as $id => $value) {
+            //$_config = Arr:only($value,["id","type",""])
+            $this->schemes[$id] = new ColorScheme(['id' => $id, 'setting' => $value['settings'], 'definition' => $definition]);
         }
     }
 
