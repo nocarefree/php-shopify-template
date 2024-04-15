@@ -1,8 +1,8 @@
 <?php
 
-namespace ShopifyTemplate\Drops;
+namespace ShopifyTemplate\Drops\Settings;
 
-class ColorDrop extends \Liquid\Models\Drop
+class Color extends \Liquid\Models\Drop
 {
 
     function __construct($color)

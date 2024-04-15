@@ -4,12 +4,10 @@ namespace ShopifyTemplate;
 
 use Illuminate\Support\Str;
 
-use JsonSchema\SchemaStorage;
 use JsonSchema\Validator;
-use JsonSchema\Constraints\Factory;
 use Seld\JsonLint;
 
-class ContentValidator extends \Exception
+class ContentValidator
 {
     protected $errors = [];
     protected $env = [];

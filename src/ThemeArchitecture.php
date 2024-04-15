@@ -63,6 +63,8 @@ class ThemeArchitecture extends Liquid
 
     public function renderTemplate($name, $data)
     {
+
+
         $this->context = new Context($this, $data);
 
         if ($file = $this->file("templates/$name.liquid")) {
@@ -109,13 +111,9 @@ class ThemeArchitecture extends Liquid
             if ($file['value'] instanceof Document) {
                 $context = $this->context->clone(['section' => new Drops\SectionDrop($config)]);
                 return $file['value']->render($context);
-            } else {
-                var_dump($file);
-                return $file['value'];
             }
-        } else {
-            return "Liquid error: Error in tag 'section' - '" . $name . "' is not a valid section type";
         }
+        return "Liquid error: Error in tag 'section' - '" . $name . "' is not a valid section type";
     }
 
     public function renderSnippet($name, $args = [])

@@ -9,22 +9,22 @@ use Illuminate\Support\Str;
 class FilterString
 {
 
-    public static function base64_encode($input, $key = null)
+    public static function base64_encode($input = '', $key = null)
     {
         return base64_encode($input);
     }
 
-    public static function base64_decode($input, $key = null)
+    public static function base64_decode($input = '', $key = null)
     {
         return base64_decode($input);
     }
 
-    public static function base64_url_safe_encode($input, $key = null)
+    public static function base64_url_safe_encode($input = '', $key = null)
     {
         return str_replace(['+', '/'], ['-', '_'], base64_encode($input));
     }
 
-    public static function base64_url_safe_decode($input, $key = null)
+    public static function base64_url_safe_decode($input = '', $key = null)
     {
         return base64_decode(str_replace(['-', '_'], ['+', '/'], $input));
     }
@@ -44,9 +44,9 @@ class FilterString
         return null;
     }
 
-    public static function escape($input)
+    public static function escape($input = '')
     {
-        return null;
+        return $input ? htmlspecialchars($input) : '';
     }
 
     public static function handleize($input)
