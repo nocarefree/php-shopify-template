@@ -12,7 +12,6 @@ $server = (new ShopifyTemplate\ThemeArchitecture());
 $server->install(__DIR__ . '/test/templates/spotlight');
 
 
-
 $shop = new Drop([
     "accepts_gift_cards" => true,
     "address" => [],

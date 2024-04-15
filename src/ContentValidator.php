@@ -16,7 +16,7 @@ class ContentValidator
     public function __construct(ThemeArchitecture $env)
     {
         $this->env = $env;
-        $this->schemaMap = include(__DIR__ . '/schema.php');
+        $this->schemaMap = json_decode(file_get_contents(dirname(__DIR__) . "/assets/json/schemas.json"));
     }
 
     public function validate($path, &$content)
@@ -58,7 +58,7 @@ class ContentValidator
         } else {
             try {
                 $data = $this->jsonDecode($content);
-                $errors = $this->verifyJsonSchema($data, $type);
+                $errors = $this->verifyJsonSchema(json_decode($content), $type);
                 $content = $data;
 
                 if (empty($errors) && in_array($type, ['sections', 'templates'])) {
@@ -77,7 +77,7 @@ class ContentValidator
 
     private function jsonDecode($content)
     {
-        $json = @json_decode($content);
+        $json = @json_decode($content, true);
         if (json_last_error()) {
             $parser = new JsonLint\JsonParser();
             try {
@@ -97,23 +97,23 @@ class ContentValidator
     }
 
 
-    public function verifySectionOrderSchema(object $data): array
+    public function verifySectionOrderSchema(array $data): array
     {
         $errors = [];
-        foreach ($data->sections as $key => $value) {
-            if (!property_exists($value, 'type')) {
+        foreach ($data["sections"] as $key => $value) {
+            if (!isset($value["type"])) {
                 $errors[] = "Section id '$key' is missing a type field";
             } else {
-                $sections[] = $value->type;
+                $sections[] = $value["type"];
             }
 
-            if (!in_array($key, $data->order)) {
+            if (!in_array($key, $data["order"])) {
                 $errors[] = "Section id '$key' must exist in order";
             }
         }
 
-        foreach ($data->order as $value) {
-            if (!property_exists($data->sections, $value)) {
+        foreach ($data["order"] as $value) {
+            if (!isset($data["sections"], $value)) {
                 $errors[] = "Section id '$value' must exist in sections";
             }
         }
@@ -132,7 +132,7 @@ class ContentValidator
     {
 
         $errors = [];
-        $schema = $this->schemaMap[$type] ?? false;
+        $schema = $this->schemaMap->{$type} ?? false;
 
         if ($schema) {
 

@@ -5,7 +5,7 @@ namespace ShopifyTemplate\Drops;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
-class SettingsDrop extends \Liquid\Models\Drop
+class Settings extends \Liquid\Models\Drop
 {
 
     protected $schema;
@@ -51,8 +51,11 @@ class SettingsDrop extends \Liquid\Models\Drop
         if (is_string($data)) {
             $data = $datas['presets'][$data];
         }
-        $this->schema = $schema[1];
+
+        $this->schema = $schema;
         $this->data = $data;
+
+        $this->validate();
     }
 
     public function validate()
@@ -60,7 +63,14 @@ class SettingsDrop extends \Liquid\Models\Drop
 
         $attributes = [];
         foreach ($this->schema as $settingsGroup) {
+            if (isset($settingsGroup['theme_name'])) {
+                continue;
+            }
             foreach ($settingsGroup['settings'] as $settingSchema) {
+
+                if (!isset($settingSchema['id'])) {
+                    continue;
+                }
 
                 $id = $settingSchema['id'];
                 $type = $settingSchema['type'];
@@ -73,7 +83,7 @@ class SettingsDrop extends \Liquid\Models\Drop
 
                 if (in_array($type, $this->types)) {
 
-                    $dropName =  "\ShopifyTemplate\Drops\Settings\\" . Str::studly($type);
+                    $dropName =  "\ShopifyTemplate\Drops\\" . Str::studly($type);
 
                     if (class_exists($dropName)) {
 
@@ -88,6 +98,9 @@ class SettingsDrop extends \Liquid\Models\Drop
                 }
             }
         }
+
+        var_dump($attributes);
+        exit;
         $this->attributes = $attributes;
     }
 

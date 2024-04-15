@@ -4,7 +4,7 @@ namespace ShopifyTemplate\Drops;
 
 use ShopifyTemplate\Nodes\SectionAttributeNode;
 
-class SectionDrop extends \Liquid\Models\Drop
+class Section extends \Liquid\Models\Drop
 {
 
     function __construct(\stdClass | array $section)

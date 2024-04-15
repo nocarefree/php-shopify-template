@@ -1,6 +1,6 @@
 <?php
 
-namespace ShopifyTemplate\Drops\Settings;
+namespace ShopifyTemplate\Drops;
 
 use IteratorIterator;
 use Traversable;

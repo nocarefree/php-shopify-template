@@ -13,6 +13,7 @@ use JsonSchema\Validator;
 use JsonSchema\Constraints\Factory;
 use Liquid\Liquid;
 use Liquid\Nodes\Document;
+use ShopifyTemplate\Drops\SettingsDrop;
 use stdClass;
 
 class ThemeArchitecture extends Liquid
@@ -57,13 +58,14 @@ class ThemeArchitecture extends Liquid
             'stylesheet' => Tags\TagStylesheet::class,
             'schema' => Tags\TagSchema::class,
         ]);
-
-        $this->schemaMap = include(__DIR__ . '/schema.php');
     }
 
     public function renderTemplate($name, $data)
     {
-
+        $data['settings'] = new Drops\Settings(
+            $this->file("config/settings_schema.json")['value'],
+            $this->file("config/settings_data.json")['value'],
+        );
 
         $this->context = new Context($this, $data);
 
@@ -75,13 +77,13 @@ class ThemeArchitecture extends Liquid
             if ($file) {
                 $template = $file['value'];
 
-                foreach ($template->order as $sectionId) {
-                    $contentForLayout .= $this->renderSection($template->sections->{$sectionId}, $sectionId);
+                foreach ($template["order"] as $sectionId) {
+                    $contentForLayout .= $this->renderSection($template["sections"][$sectionId], $sectionId);
                 }
             }
 
-            $layoutName = property_exists($template, 'layout') ? $template->layout : 'theme';
-            $layoutFile = $this->file("layout/$layoutName.liquid");
+            $layoutName = $template["layout"] ?? 'theme';
+            $layoutFile = $this->file("layout/$layoutName.liquid", "layout/theme.liquid");
             $layout = $layoutFile['value'];
         }
         return $layout->render($this->context);
@@ -92,8 +94,8 @@ class ThemeArchitecture extends Liquid
         if (!empty($file = $this->file("sections/$name.json"))) {
             $group = $file['value'];
             $content = '';
-            foreach ($group->order as $key) {
-                $content .= $this->renderSection($group->sections->{$key}, $key);
+            foreach ($group["order"] as $key) {
+                $content .= $this->renderSection($group["sections"][$key], $key);
             }
             return $content;
         } else {
@@ -103,13 +105,13 @@ class ThemeArchitecture extends Liquid
 
     public function renderSection($config, $id): string
     {
-        $name = $config->type;
-        $config->id = $id;
+        $name = $config["type"];
+        $config["id"] = $id;
 
         $file = $this->file("sections/$name.liquid");
         if ($file) {
             if ($file['value'] instanceof Document) {
-                $context = $this->context->clone(['section' => new Drops\SectionDrop($config)]);
+                $context = $this->context->clone(['section' => new Drops\Section($config)]);
                 return $file['value']->render($context);
             }
         }

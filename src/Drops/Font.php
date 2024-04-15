@@ -2,7 +2,7 @@
 
 namespace ShopifyTemplate\Drops;
 
-class FontDrop extends \Liquid\Models\Drop
+class Font extends \Liquid\Models\Drop
 {
     public $allowModifies = [
         'style' => ['normal', 'italic', 'oblique'],
@@ -21,7 +21,7 @@ class FontDrop extends \Liquid\Models\Drop
     static function getFont($handle)
     {
         if (static::$families === null) {
-            $data = json_decode(file_get_contents(__DIR__ . '/../../assets/json/shopify_font_families.json'), true);
+            $data = json_decode(file_get_contents(__DIR__ . '/../../../assets/json/shopify_font_families.json'), true);
             $list = [];
             foreach ($data as $family) {
                 foreach ($family['variants'] as $font) {
@@ -31,11 +31,7 @@ class FontDrop extends \Liquid\Models\Drop
             static::$families = $list;
         }
 
-        if (!isset(static::$families[$handle])) {
-            throw new \Liquid\LiquidException("'{$handle}' is not a valid font handle");
-        } else {
-            return static::$families[$handle];
-        }
+        return static::$families[$handle] ?? null;
     }
 
     function modify($key, $value)

@@ -1,6 +1,6 @@
 <?php
 
-namespace ShopifyTemplate\Drops\Settings;
+namespace ShopifyTemplate\Drops;
 
 class Color extends \Liquid\Models\Drop
 {
