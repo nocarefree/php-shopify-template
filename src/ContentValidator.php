@@ -44,25 +44,20 @@ class ContentValidator
             if ($stream->syntaxError()->fails()) {
                 $errors = $stream->syntaxError()->errors();
             }
-
-
-
-            // if ($type == 'sections') {
-            //     foreach ($content->nodes as $node) {
-            //         if (is_object($node) && in_array($node->name, ['javascript', 'stylesheet', 'schema'])) {
-            //             $this->addSectionInner($node->name, (string)$node);
-            //         }
-            //     }
-            // }
-
         } else {
+
             try {
                 $data = $this->jsonDecode($content);
-                $errors = $this->verifyJsonSchema(json_decode($content), $type);
-                $content = $data;
 
-                if (empty($errors) && in_array($type, ['sections', 'templates'])) {
-                    $errors = array_merge($errors, $this->verifySectionOrderSchema($data));
+                if (in_array($type, ['sections', 'templates'])) {
+                    $errors = $this->verifyJsonSchema($data, $type);
+                    $content = json_decode($content, true);
+
+                    if (empty($errors)) {
+                        $errors = array_merge($errors, $this->verifySectionOrderSchema($content));
+                    }
+                } else {
+                    $content = json_decode($content, true);
                 }
             } catch (\Exception $e) {
                 $errors[] = $e->getMessage();
@@ -77,7 +72,7 @@ class ContentValidator
 
     private function jsonDecode($content)
     {
-        $json = @json_decode($content, true);
+        $json = @json_decode($content);
         if (json_last_error()) {
             $parser = new JsonLint\JsonParser();
             try {
@@ -88,7 +83,7 @@ class ContentValidator
             }
             throw new \Exception(json_last_error_msg());
         }
-        return !empty($json) ? $json : [];
+        return is_object($json) ? $json : (object)[];
     }
 
 
@@ -132,7 +127,7 @@ class ContentValidator
     {
 
         $errors = [];
-        $schema = $this->schemaMap->{$type} ?? false;
+        $schema = property_exists($this->schemaMap, $type)  ? $this->schemaMap->{$type} : false;
 
         if ($schema) {
 

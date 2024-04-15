@@ -92,6 +92,7 @@ class Settings extends \Liquid\Models\Drop
                             $config['setting'] = $setting;
                         }
                         $attributes[$id] = new $dropName($config);
+                        echo $dropName . "\n";
                     } else {
                         $attributes[$id] = $settings ?? $default ?? null;
                     }
@@ -99,8 +100,6 @@ class Settings extends \Liquid\Models\Drop
             }
         }
 
-        var_dump($attributes);
-        exit;
         $this->attributes = $attributes;
     }
 

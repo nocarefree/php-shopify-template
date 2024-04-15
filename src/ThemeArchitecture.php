@@ -142,7 +142,6 @@ class ThemeArchitecture extends Liquid
 
 
 
-
         foreach ($this->files as $index => $file) {
             if (Str::endsWith($file['key'], ['.liquid', '.json'])) {
                 $validator->validate($file['key'], $file['value']);

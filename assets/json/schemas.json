@@ -68,7 +68,7 @@
         ],
         "additionalProperties": false
     },
-    "template": {
+    "templates": {
         "type": "object",
         "properties": {
             "layout": {

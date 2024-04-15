@@ -3,9 +3,8 @@
 namespace ShopifyTemplate\Drops;
 
 use IteratorIterator;
-use Traversable;
 
-class ColorSchemaGroupDrop extends \Liquid\Models\Drop
+class ColorSchemaGroup extends \Liquid\Models\Drop
 {
     protected $schemes;
 
