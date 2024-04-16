@@ -25,8 +25,6 @@ class Settings extends \Liquid\Models\Drop
         "collection_list",
         "color",
         "color_background",
-        "color_scheme",
-        "color_scheme_group",
         "font_picker",
         "html",
         "image_picker",
@@ -62,10 +60,14 @@ class Settings extends \Liquid\Models\Drop
     {
 
         $attributes = [];
+
+        $_settings = [];
+        $colorSchemeGroup = null;
         foreach ($this->schema as $settingsGroup) {
             if (isset($settingsGroup['theme_name'])) {
                 continue;
             }
+
             foreach ($settingsGroup['settings'] as $settingSchema) {
 
                 if (!isset($settingSchema['id'])) {
@@ -75,38 +77,54 @@ class Settings extends \Liquid\Models\Drop
                 $id = $settingSchema['id'];
                 $type = $settingSchema['type'];
                 $default = $settingSchema['default'] ?? null;
-                $setting = $this->data[$id] ?? null;
+                $config = $this->data[$id] ?? null;
 
-                if (!$default && !$setting) {
+                if (!$default && !$config && !$type) {
                     continue;
                 }
 
-                if (in_array($type, $this->types)) {
 
-                    $dropName =  "\ShopifyTemplate\Drops\\" . Str::studly($type);
+                if ($type == 'color_scheme_group') {
+                    // new "\ShopifyTemplate\Drops\\" . Str::studly($type);
+                    $colorSchemeGroup = new ColorSchemeGroup(['id' => $id, 'definition' => $settingSchema['definition'], 'settings' => $config]);
 
-                    if (class_exists($dropName)) {
-
-                        $config = Arr::only($settingSchema, ['id', 'default', 'unit', 'definition']);
-                        if ($setting) {
-                            $config['setting'] = $setting;
-                        }
-                        $attributes[$id] = new $dropName($config);
-                        echo $dropName . "\n";
-                    } else {
-                        echo "dropName:" . $dropName . "\n";
-                        $attributes[$id] = $settings ?? $default ?? null;
-                    }
+                    $this->attributes[$id] = $colorSchemeGroup;
                 } else {
-                    echo "types:" . $type . "\n";
+                    $_settings[] = ['id' => $id, 'type' => $type, 'default' => $default, 'settings' => $config];
                 }
             }
         }
 
-        var_dump($attributes);
-        exit;
 
-        $this->attributes = $attributes;
+        if (!$colorSchemeGroup) {
+            throw new \Exception("ColorSchemeGroup");
+        }
+
+        foreach ($_settings as $setting) {
+            $config = $setting['settings'] ?: $setting['default'];
+            $type = $setting['type'];
+            $id = $setting['id'];
+
+            switch ($type) {
+                case "color_scheme":
+                    $this->attributes[$id] = $colorSchemeGroup->get($config);
+                    break;
+                case "image_picker":
+                    $this->attributes[$id] = new Image($config);
+                    break;
+                case "font_picker":
+                    $this->attributes[$id] = new Font($config);
+                    break;
+                default:
+                    $dropName = "\ShopifyTemplate\Drops\\" . Str::studly($type);
+                    if (class_exists($dropName)) {
+                        $this->attributes[$id] = new $dropName($config);
+                    } else {
+                        $this->attributes[$id] = $config;
+                    }
+                    break;
+            }
+        }
     }
 
     public function getIterator(): \Traversable

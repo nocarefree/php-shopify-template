@@ -41,6 +41,6 @@ class FilterMath
 
     public static function times($input, $operand)
     {
-        return (float)$input * (float)$operand;
+        return (float)(string)$input * (float)$operand;
     }
 }

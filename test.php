@@ -100,6 +100,14 @@ $request = new Drop([
     "visual_preview_mode" => false
 ]);
 
+$localization = new Drop([
+    "available_countries" => [],
+    "available_languages" => [],
+    "country" => [],
+    "language" => [],
+    "market" => [],
+]);
+
 
 echo $server->renderTemplate('index', [
     'request' => $request,
@@ -107,6 +115,7 @@ echo $server->renderTemplate('index', [
     'page_title' => 'index page',
     'page_description' => null,
     'shop' => $shop,
+    'localization' => $localization,
 ]);
 
 exit;

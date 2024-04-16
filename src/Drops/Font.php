@@ -16,13 +16,12 @@ class Font extends \Liquid\Models\Drop
     function __construct($handle)
     {
         $this->attributes = static::getFont($handle);
-        var_dump($this->attributes);
     }
 
     static function getFont($handle)
     {
         if (static::$families === null) {
-            $data = json_decode(file_get_contents(__DIR__ . '/../../../assets/json/shopify_font_families.json'), true);
+            $data = json_decode(file_get_contents(__DIR__ . '/../../assets/json/shopify_font_families.json'), true);
             $list = [];
             foreach ($data as $family) {
                 foreach ($family['variants'] as $font) {
@@ -32,18 +31,17 @@ class Font extends \Liquid\Models\Drop
             static::$families = $list;
         }
 
-        return static::$families[$handle] ?? null;
+        return static::$families[$handle] ?? static::$families["mono"];
     }
 
-    function modify($key, $value)
+    function modify(array $data)
     {
-
-        if ($key == 'style') {
-            $this->style($value);
-        }
-
-        if ($key == 'weight') {
-            $this->weight($value);
+        foreach ($data as $value) {
+            if ($value == 'style') {
+                $this->style($value);
+            } else if ($value == 'weight') {
+                $this->weight($value);
+            }
         }
         return $this;
     }
@@ -75,6 +73,10 @@ class Font extends \Liquid\Models\Drop
 
     function url($key)
     {
+        if (empty($this->urls)) {
+            return '';
+        }
+
         if (in_array($key, $this->allowModifies['url'])) {
             return $this->urls[$key];
         } else {
@@ -82,25 +84,27 @@ class Font extends \Liquid\Models\Drop
         }
     }
 
-    function toHtml($data = [])
+    function face($data = [])
     {
+        if (empty($this->urls)) {
+            return '';
+        }
+
         $display = null;
         if (isset($data['font_display'])) {
             if (in_array($data['font_display'], $this->allowModifies['display'])) {
                 $display = $data['font_display'];
-            } else {
-                return 'Liquid error: font_display can only be set to auto, block, swap, fallback, and optional';
             }
         }
 
-        $displayHtml = $display ? ("\n\tfont-display:" . $display) : '';
+        $displayHtml = $display ? ("\n\s\sfont-display:" . $display) : '';
 
         return '@font-face {
-    font-family: ' . $this->family . ';
-    font-weight: ' . $this->weight . '; ' . $displayHtml . '
-    font-style: normal;
-    src: url("' . $this->url('woff2') . '") format("woff2"),
-            url("' . $this->url('woff') . '") format("woff");
+  font-family: ' . $this->family . ';
+  font-weight: ' . $this->weight . ';' . $displayHtml . '
+  font-style: normal;
+  src: url("' . $this->url('woff2') . '") format("woff2"),
+       url("' . $this->url('woff') . '") format("woff");
 }';
     }
 }

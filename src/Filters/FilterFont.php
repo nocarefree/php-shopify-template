@@ -2,7 +2,7 @@
 
 namespace ShopifyTemplate\Filters;
 
-use ShopifyTemplate\Drops\FontDrop;
+use ShopifyTemplate\Drops\Font;
 
 // https://shopify.dev/api/liquid/filters/font-filters
 
@@ -10,29 +10,18 @@ class FilterFont
 {
 
 
-    public static function font_modify($input, $key, $value)
+    public static function font_modify(Font $input, string $key, string |int $value)
     {
-        if ($key == 'style') {
-            if (in_array($value, ['normal', 'italic', 'oblique'])) {
-                $input['style'] = $value;
-            }
-        }
-
-        if ($key == 'weight') {
-            if (in_array($value, ['normal', 'bold', 'lighter', 'bolder'])) {
-                $input['weight'] = $value;
-            }
-        }
-        return $input;
+        return $input->modify([$key => $value]);
     }
 
-    public static function font_face($input, $key = null)
+    public static function font_face(Font $input, $key = null)
     {
-        return null;
+        return $input->face($key);
     }
 
-    public static function font_url($input, $key = null)
+    public static function font_url(Font $input, $key = null)
     {
-        return $input;
+        return $input->url($key);
     }
 }
