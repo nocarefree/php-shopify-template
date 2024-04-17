@@ -8,7 +8,7 @@ use Liquid\Models\Drop;
 use Liquid\Filters\Standard;
 
 
-$server = (new ShopifyTemplate\ThemeArchitecture());
+$server = (new ShopifyTemplate\Theme());
 $server->install(__DIR__ . '/test/templates/spotlight');
 
 

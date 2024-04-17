@@ -15,7 +15,7 @@ class Settings extends \Liquid\Models\Drop
         "checkbox",
         "number",
         "radio",
-        "range",
+        //"range",
         "select",
         "text",
         "textarea",
@@ -116,12 +116,13 @@ class Settings extends \Liquid\Models\Drop
                     $this->attributes[$id] = new Font($config);
                     break;
                 default:
-                    $dropName = "\ShopifyTemplate\Drops\\" . Str::studly($type);
-                    if (class_exists($dropName)) {
-                        $this->attributes[$id] = new $dropName($config);
-                    } else {
-                        $this->attributes[$id] = $config;
-                    }
+                    // $dropName = "\ShopifyTemplate\Drops\\" . Str::studly($type);
+                    // if (class_exists($dropName)) {
+                    //     $this->attributes[$id] = new $dropName($config);
+                    // } else {
+                    //     $this->attributes[$id] = $config;
+                    // }
+                    $this->attributes[$id] = $config;
                     break;
             }
         }

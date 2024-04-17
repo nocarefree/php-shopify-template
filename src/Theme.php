@@ -6,17 +6,10 @@ use Liquid\Context;
 use Liquid\FileSystem;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
-use Seld\JsonLint;
-
-use JsonSchema\SchemaStorage;
-use JsonSchema\Validator;
-use JsonSchema\Constraints\Factory;
 use Liquid\Liquid;
 use Liquid\Nodes\Document;
-use ShopifyTemplate\Drops\SettingsDrop;
-use stdClass;
 
-class ThemeArchitecture extends Liquid
+class Theme extends Liquid
 {
 
     protected FileSystem $fileSystem;
@@ -163,5 +156,10 @@ class ThemeArchitecture extends Liquid
         }, $default ? Arr::first($this->files, function ($v) use ($default) {
             return $v['key'] == $default;
         }, null) : null);
+    }
+
+    static public function log($message, $name = '')
+    {
+        echo ($name ? ($name . ' --- ') : '') . json_encode($message) . "\n";
     }
 }

@@ -6,6 +6,6 @@ class Range extends InputSetting
 {
     function __toString()
     {
-        return (int)$this->value;
+        return $this->value;
     }
 }

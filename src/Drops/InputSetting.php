@@ -8,7 +8,7 @@ class InputSetting
 
     function __construct($config)
     {
-        $this->value = $config['setting'] ?? $config['default'] ?? null;
+        $this->value = $config;
     }
 
     function __toString()

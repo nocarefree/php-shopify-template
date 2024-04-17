@@ -22,8 +22,12 @@ class FilterArray
         return array_merge($input, $array);
     }
 
-    public static function where($input, string $key, $value)
+    public static function where($input, string $key = '', $value = '')
     {
+        if (empty($key)) {
+            return '';
+        }
+
         return array_filter($input, function ($item) use ($key, $value) {
             return (isset($item->$key) && $item->$key == $value)
                 || (isset($item[$key]) && $item[$key] == $value);

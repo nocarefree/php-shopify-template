@@ -13,7 +13,7 @@ class ContentValidator
     protected $env = [];
     protected $schemaMap;
 
-    public function __construct(ThemeArchitecture $env)
+    public function __construct(Theme $env)
     {
         $this->env = $env;
         $this->schemaMap = json_decode(file_get_contents(dirname(__DIR__) . "/assets/json/schemas.json"));
