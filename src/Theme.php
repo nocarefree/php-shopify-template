@@ -58,7 +58,7 @@ class Theme extends Liquid
     {
 
         $filters = new Filters([
-            'locale' => $this->file('locales/en.default.json'),
+            'locale' => $this->file('locales/en.default.json')['value'],
         ]);
 
         $this->registerFilters([$filters]);
