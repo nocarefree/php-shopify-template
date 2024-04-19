@@ -35,7 +35,8 @@ class Theme extends Liquid
             Filters\FilterMetafield::class,
             Filters\FilterMoney::class,
             Filters\FilterString::class,
-            Filters\FilterUrl::class
+            Filters\FilterUrl::class,
+            Filters\FilterFormat::class
         ]);
 
         $this->registerTags([
@@ -55,6 +56,14 @@ class Theme extends Liquid
 
     public function renderTemplate($name, $data)
     {
+
+        $filters = new Filters([
+            'locale' => $this->file('locales/en.default.json')['value'],
+        ]);
+
+        $this->registerFilters([$filters]);
+
+
         $data['settings'] = new Drops\Settings(
             $this->file("config/settings_schema.json")['value'],
             $this->file("config/settings_data.json")['value'],
@@ -74,6 +83,8 @@ class Theme extends Liquid
                     $contentForLayout .= $this->renderSection($template["sections"][$sectionId], $sectionId);
                 }
             }
+
+            $this->context->assign('content_for_layout', $contentForLayout);
 
             $layoutName = $template["layout"] ?? 'theme';
             $layoutFile = $this->file("layout/$layoutName.liquid", "layout/theme.liquid");
