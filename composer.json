@@ -1,9 +1,14 @@
 {
     "name": "nocarefree/php-shopify-template",
     "description": "Shopify Liquid template engine for php",
-    "keywords": ["php","liquid", "template","shopify"],
+    "keywords": [
+        "php",
+        "liquid",
+        "template",
+        "shopify"
+    ],
     "license": "MIT",
-	"type": "library",
+    "type": "library",
     "autoload": {
         "psr-4": {
             "ShopifyTemplate\\": "src/"
@@ -16,10 +21,9 @@
         }
     ],
     "require": {
-        "php": ">= 8.0",
-        "illuminate/support": "^11.1",
+        "php": "^8.0",
+        "laravel/framework": "^8.37|^9.0|^10.0|^11.0",
         "nocarefree/php-liquid": "dev-main",
-        "illuminate/config": ">9.14",
         "seld/jsonlint": "^1.10",
         "justinrainbow/json-schema": "^5.2"
     },

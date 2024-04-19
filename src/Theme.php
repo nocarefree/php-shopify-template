@@ -133,8 +133,6 @@ class Theme extends Liquid
 
         $this->files = $local->get();
 
-
-
         foreach ($this->files as $index => $file) {
             if (Str::endsWith($file['key'], ['.liquid', '.json'])) {
                 $validator->validate($file['key'], $file['value']);

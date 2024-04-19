@@ -89,9 +89,9 @@ class FilterString
         return null;
     }
 
-    public static function prepend($input)
+    public static function prepend(string $input = '', string $string = '')
     {
-        return null;
+        return $string . $input;
     }
 
     public static function remove($input)

@@ -5,38 +5,50 @@ namespace ShopifyTemplate;
 use Illuminate\Support\Str;
 
 use JsonSchema\Validator;
+use JsonSchema\SchemaStorage;
+use JsonSchema\Constraints\Factory;
 use Seld\JsonLint;
+use ShopifyTemplate\Tags\TagSchema;
 
 class ContentValidator
 {
     protected $errors = [];
     protected $env = [];
     protected $schemaMap;
+    protected $schemaValidator;
 
     public function __construct(Theme $env)
     {
         $this->env = $env;
         $this->schemaMap = json_decode(file_get_contents(dirname(__DIR__) . "/assets/json/schemas.json"));
+
+        $schemaStorage = new SchemaStorage();
+
+        foreach ($this->schemaMap as $key => $value) {
+            $schemaStorage->addSchema('json://theme.com/schemas/' . $key, $value);
+        }
+
+        $this->schemaValidator = new Validator(new Factory($schemaStorage));
+
+        // Provide $schemaStorage to the Validator so that references c   
     }
 
-    public function validate($path, &$content)
+    public function validate($path, $content)
     {
         $errors = [];
         list($type) = explode('/', $path);
         if (Str::endsWith($path, '.liquid')) {
-            switch ($type) {
-                case 'layout':
-                    if (!preg_match('#{{[\s]?+content_for_header[\s]?+}}#', $content)) {
-                        $errors[] = ("Missing {{content_for_header}} in the head section of the template");
-                    }
-                    if (!preg_match('#{{[\s]?+content_for_layout[\s]?+}}#', $content)) {
-                        $errors[] = ("Missing {{content_for_layout}} in the content section of the template");
-                    }
-                    break;
-                default:
-                    break;
+            if ($type == 'layout') {
+                if (!preg_match('#{{[\s]?+content_for_header[\s]?+}}#', $content)) {
+                    $errors[] = ("Missing {{content_for_header}} in the head section of the template");
+                }
+                if (!preg_match('#{{[\s]?+content_for_layout[\s]?+}}#', $content)) {
+                    $errors[] = ("Missing {{content_for_layout}} in the content section of the template");
+                }
+                if ($errors) {
+                    return $errors;
+                }
             }
-
 
             $stream = new \Liquid\TokenStream($this->env, $content);
             $content = $stream->parse();
@@ -44,31 +56,51 @@ class ContentValidator
             if ($stream->syntaxError()->fails()) {
                 $errors = $stream->syntaxError()->errors();
             }
-        } else {
 
-            try {
-                $data = $this->jsonDecode($content);
-
-                if (in_array($type, ['sections', 'templates'])) {
-                    $errors = $this->verifyJsonSchema($data, $type);
-                    $content = json_decode($content, true);
-
-                    if (empty($errors)) {
-                        $errors = array_merge($errors, $this->verifySectionOrderSchema($content));
+            if (in_array($type, ['sections'])) {
+                $schema = null;
+                foreach ($content->nodes as $node) {
+                    if ($node instanceof TagSchema) {
+                        $schema = (string)$node;
                     }
-                } else {
-                    $content = json_decode($content, true);
                 }
-            } catch (\Exception $e) {
-                $errors[] = $e->getMessage();
-                $content = [];
+
+                if ($schema) {
+                    $errors = $this->verifyJson($schema, 'sectionSchema');
+                }
             }
+        } else {
+            $errors = $this->verifyJson($content, $path);
         }
-        if ($errors) {
-            $this->errors[$path] = $errors;
-        }
+
+        return $errors;
     }
 
+    public function verifyJson($data, $type = '')
+    {
+
+        $data = $this->jsonDecode($data);
+
+        if (Str::startsWith($type, 'sections')) {
+            $type = 'sectionGroups';
+        } else if (Str::startsWith($type, 'templates')) {
+            $type = 'sections';
+        } else if ($type == 'config/settings_schema.json') {
+            $type = 'themeSettingsSchema';
+        }
+
+
+        $errors = $this->verifyJsonSchema($data, $type);
+
+        if ($errors) {
+            return $errors;
+        }
+
+        if ($type == 'sections' || $type == 'sectionGroups') {
+            $errors = array_merge($errors, $this->verifySectionOrderSchema($data));
+        }
+        return $errors;
+    }
 
     private function jsonDecode($content)
     {
@@ -83,32 +115,27 @@ class ContentValidator
             }
             throw new \Exception(json_last_error_msg());
         }
-        return is_object($json) ? $json : (object)[];
+        return $json ?: (object)[];
     }
 
 
-    public function verifyJson($content)
-    {
-    }
-
-
-    public function verifySectionOrderSchema(array $data): array
+    public function verifySectionOrderSchema(object $data): array
     {
         $errors = [];
-        foreach ($data["sections"] as $key => $value) {
-            if (!isset($value["type"])) {
+        foreach ($data->sections as $key => $value) {
+            if (!property_exists($value, 'type')) {
                 $errors[] = "Section id '$key' is missing a type field";
             } else {
-                $sections[] = $value["type"];
+                $sections[] = $value->type;
             }
 
-            if (!in_array($key, $data["order"])) {
+            if (!in_array($value, $data->order)) {
                 $errors[] = "Section id '$key' must exist in order";
             }
         }
 
-        foreach ($data["order"] as $value) {
-            if (!isset($data["sections"], $value)) {
+        foreach ($data->order as $value) {
+            if (!property_exists($data->sections, $value)) {
                 $errors[] = "Section id '$value' must exist in sections";
             }
         }
@@ -123,20 +150,22 @@ class ContentValidator
     }
 
 
-    public function verifyJsonSchema(object | array $data, $type): array
+    public function verifyJsonSchema(object | array $data, $type = ''): array
     {
+        if (!$type) {
+            return [];
+        }
 
         $errors = [];
         $schema = property_exists($this->schemaMap, $type)  ? $this->schemaMap->{$type} : false;
 
+
         if ($schema) {
 
-            $validator = new Validator;
-            $validator->validate($data, $schema);
-
-            if (!$validator->isValid()) {
-                foreach ($validator->getErrors() as $error) {
-                    $errors[] = printf("[%s] %s\n", $error['property'], $error['message']);
+            $this->schemaValidator->validate($data, $schema);
+            if (!$this->schemaValidator->isValid()) {
+                foreach ($this->schemaValidator->getErrors() as $error) {
+                    $errors[] = sprintf("[%s] %s\n", $error['property'], $error['message']);
                 }
             }
         }

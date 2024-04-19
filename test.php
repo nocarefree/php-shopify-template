@@ -109,13 +109,13 @@ $localization = new Drop([
 ]);
 
 
-echo $server->renderTemplate('index', [
-    'request' => $request,
-    'canonical_url' => $request->origin . $request->path,
-    'page_title' => 'index page',
-    'page_description' => null,
-    'shop' => $shop,
-    'localization' => $localization,
-]);
+// echo $server->renderTemplate('index', [
+//     'request' => $request,
+//     'canonical_url' => $request->origin . $request->path,
+//     'page_title' => 'index page',
+//     'page_description' => null,
+//     'shop' => $shop,
+//     'localization' => $localization,
+// ]);
 
 exit;

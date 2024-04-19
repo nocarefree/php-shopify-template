@@ -1,26 +1,4 @@
 {
-    "config": {
-        "type": "object",
-        "properties": {
-            "current": {
-                "onlyOf": [
-                    {
-                        "type": "string"
-                    },
-                    {
-                        "type": "object"
-                    }
-                ]
-            },
-            "presets": {
-                "type": "object"
-            }
-        },
-        "required": [
-            "current",
-            "presets"
-        ]
-    },
     "inputSetting": {
         "type": "object",
         "properties": {
@@ -34,7 +12,11 @@
                 "type": "string"
             },
             "default": {
-                "type": "string"
+                "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                ]
             },
             "info": {
                 "type": "string"
@@ -44,7 +26,8 @@
             "type",
             "id",
             "label"
-        ]
+        ],
+        "additionalProperties": true
     },
     "sidebarSetting": {
         "type": "object",
@@ -68,7 +51,191 @@
         ],
         "additionalProperties": false
     },
-    "templates": {
+    "sectionDefault": {
+        "type": "object",
+        "properties": {
+            "settings": {
+                "type": "array"
+            },
+            "blocks": {
+                "type": "array"
+            }
+        }
+    },
+    "sectionPreset": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "settings": {
+                "type": "array"
+            },
+            "blocks": {
+                "type": "array"
+            }
+        },
+        "required": [
+            "name"
+        ]
+    },
+    "sectionRange": {
+        "type": "object",
+        "properties": {
+            "templates": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "type": "string"
+                    }
+                ]
+            },
+            "groups": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "enum": [
+                            "header",
+                            "footer",
+                            "aside",
+                            "[*]"
+                        ]
+                    },
+                    {
+                        "type": "string",
+                        "pattern": "^customer\\\\.[\\\\w+]$"
+                    }
+                ]
+            }
+        }
+    },
+    "sectionSchema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "tag": {
+                "type": "string"
+            },
+            "class": {
+                "type": "string"
+            },
+            "limit": {
+                "type": "number"
+            },
+            "settings": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "$ref": "/schemas/inputSetting"
+                    }
+                ]
+            },
+            "blocks": {
+                "type": "array"
+            },
+            "max_blocks": {
+                "type": "number"
+            },
+            "presets": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "$ref": "/schemas/sectionPreset"
+                    }
+                ]
+            },
+            "default": {
+                "$ref": "/schemas/sectionDefault"
+            },
+            "locales": {
+                "type": "object"
+            },
+            "enabled_on": {
+                "$ref": "/schemas/sectionRange"
+            },
+            "disabled_on": {
+                "$ref": "/schemas/sectionRange"
+            }
+        },
+        "additionalProperties": true
+    },
+    "themeInfo": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "theme_name": {
+                "type": "string"
+            },
+            "theme_author": {
+                "type": "string"
+            },
+            "theme_version": {
+                "type": "string"
+            },
+            "theme_documentation_url": {
+                "type": "string"
+            },
+            "theme_support_email": {
+                "type": "string"
+            },
+            "theme_support_url": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "name",
+            "theme_name",
+            "theme_author",
+            "theme_version",
+            "theme_documentation_url"
+        ],
+        "additionalProperties": false
+    },
+    "themeSettingsGroup": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "settings": {
+                "type": "array",
+                "oneOf": [
+                    {
+                        "$ref": "/schemas/inputSetting"
+                    },
+                    {
+                        "$ref": "/schemas/sidebarSetting"
+                    }
+                ]
+            },
+            "required": [
+                "name",
+                "settings"
+            ]
+        },
+        "additionalProperties": false
+    },
+    "themeSettingsSchema": {
+        "type": "array",
+        "prefixItems": [
+            {
+                "$ref": "/schemas/settingsGroup"
+            },
+            {
+                "$ref": "/schemas/themeInfo"
+            }
+        ],
+        "contains": {
+            "$ref": "/schemas/themeInfo"
+        },
+        "minContains": 1,
+        "maxContains": 1
+    },
+    "sections": {
         "type": "object",
         "properties": {
             "layout": {
@@ -112,7 +279,7 @@
         ],
         "additionalProperties": false
     },
-    "sections": {
+    "sectionGroups": {
         "type": "object",
         "properties": {
             "type": {
