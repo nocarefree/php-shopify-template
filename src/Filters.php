@@ -17,10 +17,6 @@ class Filters
 
     public function t($input, $data = [])
     {
-        if ($data) {
-            var_dump($data);
-            exit;
-        }
         $input = Arr::get($this->locale, $input, '');
         foreach ($data as $key => $value) {
             $input = preg_replace("/{{\s*" . preg_quote($key, '/') . "\s*}}/", $value, $input);
